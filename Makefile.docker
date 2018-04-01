@@ -4,7 +4,19 @@ PROJECTROOT=$(shell pwd)
 # The name for the docker builder image
 BUILDER_CONTAINER_NAME="milagro-crypto/amcl-builder"
 
-make = docker run --rm -v $(PROJECTROOT):/src -w /src --user `id -u` -e WINEPREFIX=/tmp/.wine $(BUILDER_CONTAINER_NAME) sh -c "mkdir -p /tmp/.wine && make $1"
+define make
+	rm -rf target
+	docker create \
+		--env WINEPREFIX=/tmp/.wine \
+		--name builder \
+		--workdir /src \
+		$(BUILDER_CONTAINER_NAME) sh -c "mkdir -p /tmp/.wine && make $1"
+	docker cp . builder:/src
+	-docker start -ai builder
+	docker cp builder:/src/target .
+	docker stop builder
+	docker rm builder
+endef
 
 all: builder
 
