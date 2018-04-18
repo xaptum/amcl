@@ -341,7 +341,7 @@ foreach(level ${AMCL_RSA})
   )
 
   install(FILES
-    ${amcl_rsa_${level}_GEN_HRS}
+    ${amcl_rsa_${level}_GEN_HDRS}
     DESTINATION ${INSTALL_INCLUDESUBDIR}
   )
 
