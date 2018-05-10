@@ -17,7 +17,7 @@ RUN dpkg --add-architecture i386 \
     parallel \
     python-pip \
     python-setuptools\
-    wine \
+    wine-stable \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && pip install \
