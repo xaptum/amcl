@@ -287,7 +287,7 @@ build_item:
 buildx:
 	@echo -e "\n\n*** BUILD ${BUILD_NAME} ***\n"
 	rm -rf target/${BUILD_NAME}/*
-ifneq ($(strip $(filter %COVERAGE,${BUILD_NAME})),)
+ifneq ($(findstring -DCMAKE_BUILD_TYPE=Coverage,${BUILD_PARAMS}),)
 	mkdir -p target/${BUILD_NAME}/coverage
 	cd target/${BUILD_NAME} && \
 	cmake $(subst $(dcomma),$(space),${BUILD_PARAMS}) ../.. | tee cmake.log ; test $${PIPESTATUS[0]} -eq 0 && \

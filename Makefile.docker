@@ -14,6 +14,7 @@ define make
 	docker cp . builder:/src
 	-docker start -ai builder
 	docker cp builder:/src/target .
+	docker cp builder:/src/src .
 	docker stop builder
 	docker rm builder
 endef
