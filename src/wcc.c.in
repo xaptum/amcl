@@ -267,8 +267,8 @@ int WCC_ZZZ_SENDER_KEY(int sha, int date, octet *xOct, octet *piaOct, octet *pib
             printf("ATPG1Oct Invalid Point: ");
             OCT_output(ATPG1Oct);
             printf("\n");
-            return WCC_INVALID_POINT;
 #endif
+            return WCC_INVALID_POINT;
         }
 
         // H2(date|sha256(IdB))

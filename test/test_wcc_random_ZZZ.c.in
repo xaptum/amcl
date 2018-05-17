@@ -33,7 +33,7 @@
 #include "wcc_ZZZ.h"
 #include "config_test.h"
 
-#define DEBUG
+// #define DEBUG
 
 void rand_str(char *dest, size_t length,csprng *RNG)
 {
@@ -401,7 +401,7 @@ int main()
 #endif
 
         // Bob calculates AES Key
-        WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, &BTPG2, &IdA, &K2);
+        rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, &BTPG2, &IdA, &K2);
         if (rtn != 0)
         {
             printf("Bob WCC_ZZZ_RECEIVER_KEY() Error %d\n", rtn);
