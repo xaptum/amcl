@@ -104,7 +104,6 @@ int main()
     int i, rtn, date, hash;
 
     int hashDoneOn = 1;
-    int hashDoneOff = 0;
 
     date = today();
     hash = SHA256;
