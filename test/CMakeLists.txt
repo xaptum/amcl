@@ -185,6 +185,7 @@ foreach(curve ${AMCL_CURVE})
       amcl_curve_test(${curve} test_wcc_sha384_${TC} test_wcc_ZZZ.c.in        amcl_wcc_${TC} "SUCCESS" "sha384")
       amcl_curve_test(${curve} test_wcc_sha512_${TC} test_wcc_ZZZ.c.in        amcl_wcc_${TC} "SUCCESS" "sha512")
       amcl_curve_test(${curve} test_wcc_random_${TC} test_wcc_random_ZZZ.c.in amcl_wcc_${TC} "SUCCESS")
+      amcl_curve_test(${curve} test_wcc_invalid_points_${TC} test_wcc_invalid_points_ZZZ.c.in amcl_wcc_${TC} "SUCCESS")
     endif()
 
   endif()
