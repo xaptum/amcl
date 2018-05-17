@@ -1,7 +1,7 @@
 /**
- * @file test_wcc_random.c
- * @author Kealan McCusker
- * @brief Test WCC with two TAs and time permits for random values
+ * @file test_wcc_invalid_points.c
+ * @author Samuele Andreoli
+ * @brief Test WCC handling of invalid points
  *
  * LICENSE
  *

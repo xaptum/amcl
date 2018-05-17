@@ -120,10 +120,6 @@ int main(int argc, char** argv)
     printf("BIG nbits   %d\n", (int)BIG_XXX_nbits(r));
     printf("BIGBITS_XXX %d\n", (int)BIGBITS_XXX);
 
-
-
-
-
     /* unrandom seed value! */
     SEED.len=32;
     for (i=0; i<32; i++) SEED.val[i]=i+1;
@@ -223,7 +219,7 @@ int main(int argc, char** argv)
     // printf("PIB: ");OCT_output(&PIB);printf("\n");
 
     // Bob calculates AES Key
-    WCC_ZZZ_RECEIVER_KEY(hash,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, NULL, &IdA, &K2);
+    rtn = WCC_ZZZ_RECEIVER_KEY(hash,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, NULL, &IdA, &K2);
     if (rtn != 0)
     {
         printf("Bob WCC_ZZZ_RECEIVER_KEY() Error %d\n", rtn);
