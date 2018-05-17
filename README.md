@@ -1,13 +1,8 @@
 # AMCL - *Apache Milagro Crypto Library*
 
-[![Master Branch](https://img.shields.io/badge/-master:-gray.svg)](https://github.com/milagro-crypto/milagro-crypto-c/tree/master)
-[![Master Build Status](https://secure.travis-ci.org/milagro-crypto/milagro-crypto-c.png?branch=master)](https://travis-ci.org/milagro-crypto/milagro-crypto-c?branch=master)
-[![Master Coverage Status](https://coveralls.io/repos/github/milagro-crypto/milagro-crypto-c/badge.svg?branch=master)](https://coveralls.io/github/milagro-crypto/milagro-crypto-c?branch=master)
-
-[![Develop Branch](https://img.shields.io/badge/-develop:-gray.svg)](https://github.com/milagro-crypto/milagro-crypto-c/tree/develop)
-[![Develop Build Status](https://secure.travis-ci.org/milagro-crypto/milagro-crypto-c.png?branch=develop)](https://travis-ci.org/milagro-crypto/milagro-crypto-c?branch=develop)
-[![Develop Coverage Status](https://coveralls.io/repos/github/milagro-crypto/milagro-crypto-c/badge.svg?branch=develop)](https://coveralls.io/github/milagro-crypto/milagro-crypto-c?branch=develop)
-
+[![Branch](https://img.shields.io/badge/-master:-gray.svg)](https://github.com/milagro-crypto/milagro-crypto-c/tree/master)
+[![Build Status](https://travis-ci.org/milagro-crypto/milagro-crypto-c.svg?branch=master)](https://travis-ci.org/milagro-crypto/milagro-crypto-c)
+[![Coverage Status](https://coveralls.io/repos/github/milagro-crypto/milagro-crypto-c/badge.svg?branch=master)](https://coveralls.io/github/milagro-crypto/milagro-crypto-c?branch=master)
 
 * **category**:    Library
 * **copyright**:   2018 The Apache Software Foundation
