@@ -325,7 +325,7 @@ int WCC_ZZZ_SENDER_KEY(int sha, int date, octet *xOct, octet *piaOct, octet *pib
     mhashit(sha,0,&HV,&HT);
 
     OCT_empty(AESKeyOct);
-    OCT_jbytes(AESKeyOct,HT.val,WCC_PAS);
+    OCT_jbytes(AESKeyOct,HT.val+HT.len-sha,WCC_PAS);
 
     return 0;
 }
@@ -430,7 +430,7 @@ int WCC_ZZZ_RECEIVER_KEY(int sha, int date, octet *yOct, octet *wOct,  octet *pi
     mhashit(sha,0,&HV,&HT);
 
     OCT_empty(AESKeyOct);
-    OCT_jbytes(AESKeyOct,HT.val,WCC_PAS);
+    OCT_jbytes(AESKeyOct,HT.val+HT.len-sha,WCC_PAS);
 
     return 0;
 
