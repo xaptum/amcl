@@ -17,6 +17,7 @@ define make
 	docker cp builder:/src/target .
 	docker stop builder
 	docker rm builder
+	# Workaround: Correct path for coverage src files
 	@sed -i -e "s#^SF:/src\(.*\)#SF:${PWD}\1#g" target/LINUX_64BIT_COVERAGE/coverage/amcl.info
 	@mv buildall.exit target
 	@exit `cat target/buildall.exit`
