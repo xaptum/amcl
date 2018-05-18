@@ -15,7 +15,6 @@ define make
 	-docker start -ai builder; \
 	echo $$? > buildall.exit
 	docker cp builder:/src/target .
-	docker cp builder:/src/src .
 	docker stop builder
 	docker rm builder
 	# Workaround: Correct path for coverage src files
