@@ -15,10 +15,10 @@ define make
 	-docker start -ai builder; \
 	echo $$? > buildall.exit
 	docker cp builder:/src/target .
-	docker cp builder:/src/src .
 	docker stop builder
 	docker rm builder
-	mv buildall.exit target
+	@sed -i -e "s#^SF:/src\(.*\)#SF:${PWD}\1#g" target/LINUX_64BIT_COVERAGE/coverage/amcl.info
+	@mv buildall.exit target
 	@exit `cat target/buildall.exit`
 endef
 
