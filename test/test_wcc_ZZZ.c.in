@@ -95,6 +95,13 @@ int main(int argc, char** argv)
     octet K1= {0,sizeof(k1),k1};
     octet K2= {0,sizeof(k2),k2};
 
+    // Zero octet
+    char zero[WCC_PAS];
+    octet ZERO= {0,sizeof(zero),zero};
+    for(i=0;i<WCC_PAS;i++){
+        ZERO.val[i]=0;
+    }
+
     int date, hash;
 
     int hashDoneOn = 1;
@@ -225,6 +232,11 @@ int main(int argc, char** argv)
         printf("Bob WCC_ZZZ_RECEIVER_KEY() Error %d\n", rtn);
         return 1;
     }
+    if (OCT_comp(&K2,&ZERO))
+    {
+        printf("Bob WCC_ZZZ_Receiver_KEY() Error: generated key is zero\n");
+        return 1;
+    }
 
     // pia = Hq(PaG1,PbG2,PgG1,IdB)
     WCC_ZZZ_Hq(hash,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
@@ -240,6 +252,11 @@ int main(int argc, char** argv)
     if (rtn != 0)
     {
         printf("Alice WCC_ZZZ_SENDER_KEY() Error %d\n", rtn);
+        return 1;
+    }
+    if (OCT_comp(&K1,&ZERO))
+    {
+        printf("Alice WCC_ZZZ_SENDER_KEY() Error: generated key is zero\n");
         return 1;
     }
 

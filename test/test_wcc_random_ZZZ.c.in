@@ -134,6 +134,13 @@ int main()
     octet C= {0,sizeof(c),c};
     octet P= {0,sizeof(p),p};
 
+    // Zero octet
+    char zero[WCC_PAS];
+    octet ZERO= {0,sizeof(zero),zero};
+    for(i=0;i<WCC_PAS;i++){
+        ZERO.val[i]=0;
+    }
+
     int date;
     date = today();
     printf("Date %d \n", date);
@@ -409,6 +416,11 @@ int main()
         }
         printf("Bob AES Key: ");
         OCT_output(&K2);
+        if (OCT_comp(&K2,&ZERO))
+        {
+            printf("Bob WCC_ZZZ_RECEIVER_KEY() Error: generated key is zero\n");
+            return 1;
+        }
 
         printf("Bob sends IdB, PbG2 and PgG1 to Alice\n\n");
         printf("Bob IdB: ");
@@ -447,6 +459,11 @@ int main()
         }
         printf("Alice AES Key: ");
         OCT_output(&K1);
+        if (OCT_comp(&K1,&ZERO))
+        {
+            printf("Alice WCC_ZZZ_SENDER_KEY() Error: generated key is zero\n");
+            return 1;
+        }
 
         // Send message
         IV.len=12;
