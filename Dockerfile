@@ -18,6 +18,8 @@ RUN dpkg --add-architecture i386 \
     python-pip \
     python-setuptools\
     wine-stable \
+    wine64 \
+    wine32 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && pip install \
