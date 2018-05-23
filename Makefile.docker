@@ -1,8 +1,8 @@
-# Project root directory
-PROJECTROOT=$(shell pwd)
-
 # The name for the docker builder image
 BUILDER_CONTAINER_NAME="milagro-crypto/amcl-builder"
+
+# Coverage info
+COVERAGE_INFO=target/LINUX_64BIT_COVERAGE/coverage/amcl.info
 
 define make
 	rm -rf target
@@ -17,8 +17,8 @@ define make
 	docker cp builder:/src/target .
 	docker stop builder
 	docker rm builder
-	# Workaround: Correct path for coverage src files
-	@sed -i -e "s#^SF:/src\(.*\)#SF:${PWD}\1#g" target/LINUX_64BIT_COVERAGE/coverage/amcl.info
+	@# Workaround: Correct path for coverage src files
+	ls ${COVERAGE_INFO} && sed -i -e "s#^SF:/src\(.*\)#SF:${PWD}\1#g" ${COVERAGE_INFO} || echo "Skipping coverage info"
 	@mv buildall.exit target
 	@exit `cat target/buildall.exit`
 endef
