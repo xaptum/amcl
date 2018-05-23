@@ -260,12 +260,12 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    printf("K1: 0x");
+    OCT_output(&K1);
+    printf("K2: 0x");
+    OCT_output(&K2);
     if (!OCT_comp(&K1,&K2))
     {
-        printf("K1: 0x");
-        OCT_output(&K1);
-        printf("K2: 0x");
-        OCT_output(&K2);
         printf("FAILURE No Time Permit Test. OCT_comp(&K1,&K2)\n");
         return 1;
     }
