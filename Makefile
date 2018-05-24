@@ -287,7 +287,7 @@ build_item:
 buildx:
 	@echo -e "\n\n*** BUILD ${BUILD_NAME} ***\n"
 	rm -rf target/${BUILD_NAME}/*
-ifneq ($(strip $(filter %COVERAGE,${BUILD_NAME})),)
+ifneq ($(findstring -DCMAKE_BUILD_TYPE=Coverage,${BUILD_PARAMS}),)
 	mkdir -p target/${BUILD_NAME}/coverage
 	cd target/${BUILD_NAME} && \
 	cmake $(subst $(dcomma),$(space),${BUILD_PARAMS}) ../.. | tee cmake.log ; test $${PIPESTATUS[0]} -eq 0 && \
@@ -297,7 +297,7 @@ ifneq ($(strip $(filter %COVERAGE,${BUILD_NAME})),)
 	lcov --capture --initial --directory . --output-file coverage/amcl && \
 	env CTEST_OUTPUT_ON_FAILURE=1 make test | tee test.log ; test $${PIPESTATUS[0]} -eq 0 && \
 	lcov --no-checksum --directory . --capture --output-file coverage/amcl.info && \
-	lcov --remove coverage/amcl.info "/test_*" --output-file coverage/amcl.info && \
+	lcov --remove coverage/amcl.info "*/test_*" --output-file coverage/amcl.info && \
 	genhtml -o coverage -t "milagro-crypto-c Test Coverage" coverage/amcl.info
 else
 	mkdir -p target/${BUILD_NAME}
