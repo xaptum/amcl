@@ -52,6 +52,7 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
     BIG_XXX x,y;
 
     stringy = strchr(++stringx,',');
+
     if (stringy == NULL)
     {
         printf("ERROR unexpected test vector\n");
@@ -60,6 +61,7 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
     *stringy = '\0';
 
     end = strchr(++stringy,']');
+
     if (end == NULL)
     {
         printf("ERROR unexpected test vector\n");
@@ -377,7 +379,6 @@ int main(int argc, char** argv)
             FP12_YYY_usqr(&FP12aux1,&FP12aux1);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
-
             if(!FP12_YYY_equals(&FP12aux1,&FP12usquare))
             {
                 printf("ERROR computing usquare of FP12, line %d\n",i);
@@ -426,7 +427,6 @@ int main(int argc, char** argv)
             FP12_YYY_inv(&FP12aux1,&FP12aux1);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
-
             if(!FP12_YYY_equals(&FP12aux1,&FP12inv))
             {
                 printf("ERROR computing inverse of a FP12, line %d\n",i);
@@ -546,6 +546,7 @@ int main(int argc, char** argv)
             }
         }
     }
+
     fclose(fp);
 
     printf("SUCCESS TEST ARITMETIC OF FP12 PASSED\n");
