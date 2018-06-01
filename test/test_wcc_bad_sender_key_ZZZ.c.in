@@ -67,7 +67,7 @@ int main()
     octet BKeyG2= {0,sizeof(bkeyG2), bkeyG2};
 
     // Eve Receiver key
-    char ekeyG1[2*WCC_PFS_ZZZ];
+    char ekeyG1[2*WCC_PFS_ZZZ+1];
     octet EKeyG1= {0,sizeof(ekeyG1), ekeyG1};
 
     // Parties identities
