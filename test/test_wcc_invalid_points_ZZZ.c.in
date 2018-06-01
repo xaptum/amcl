@@ -240,6 +240,6 @@ int main()
     }
 
     KILL_CSPRNG(&RNG);
-    printf("SUCCESS\n");
+    printf("SUCCESS! WCC INVALID POINT HANDLING TEST\n");
     return 0;
 }
