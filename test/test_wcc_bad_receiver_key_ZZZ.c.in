@@ -23,7 +23,7 @@
  * under the License.
  */
 
-/* Test WCC with two TAs and time permits for random values */
+/* Test WCC using the wrong receiver key, i.e. a key generated from a different identity */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -164,6 +164,9 @@ int main()
         OCT_output(&MS);
 #endif
 
+
+        /* Generate key material for Alice, Bob and Eve */
+
         // Alice's ID
         rand_str(&IdA,&RNG);
 #ifdef DEBUG
@@ -226,6 +229,9 @@ int main()
         printf("TA Eve's receiver key: ");
         OCT_output(&EKeyG2);
 #endif
+
+
+        /* TEST RUN: Check that the protocol is working when using the right receiver key */
 
 #ifdef DEBUG
         printf("Control Run. Alice:\n");
@@ -403,6 +409,9 @@ int main()
             printf("FAILURE Control run keys do not match. OCT_comp(&K1,&K2)\n");
             return 1;
         }
+
+
+        /* BAD KEY RUN: Check that someone with the wrong receiver key obtains a different session key */
 
 #ifdef DEBUG
         printf("Bad key run. Alice:\n");
