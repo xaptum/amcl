@@ -51,22 +51,21 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
     char *stringy, *end;
     BIG_XXX x,y;
 
-    stringx++;
-    stringy = strchr(stringx,',');
+    stringy = strchr(++stringx,',');
     if (stringy == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    stringy[0] = '\0';
-    stringy++;
-    end = strchr(stringy,']');
+    *stringy = '\0';
+
+    end = strchr(++stringy,']');
     if (end == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    end[0] = '\0';
+    *end = '\0';
 
     read_BIG_XXX(x,stringx);
     read_BIG_XXX(y,stringy);
@@ -74,186 +73,89 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
     FP2_YYY_from_BIGs(fp2,x,y);
 }
 
-void read_FP4_YYY(FP4_YYY *fp4, char* stringx1)
+void read_FP4_YYY(FP4_YYY *fp4, char* stringx)
 {
-    char *stringx2, *stringy1, *stringy2, *end;
-    BIG_XXX x1,x2,y1,y2;
+    char *stringy, *end;
     FP2_YYY x,y;
 
-    stringx1 += 2;
-    stringx2 = strchr(stringx1,',');
-    if (stringx2 == NULL)
+    stringy = strchr(++stringx,']');
+    if (stringy == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    stringx2[0] = '\0';
-    stringx2 ++;
-    stringy1 = strchr(stringx2,']');
-    if (stringy1 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringy1[0] = '\0';
-    stringy1 += 3;
-    stringy2 = strchr(stringy1,',');
-    if (stringy2 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringy2[0] = '\0';
-    stringy2++;
-    end = strchr(stringy2,']');
+    *(++stringy) = '\0';
+
+    end = strchr(++stringy,']');
     if (end == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    end[0] = '\0';
+    *(++end) = '\0';
 
-    read_BIG_XXX(x1,stringx1);
-    read_BIG_XXX(x2,stringx2);
-    read_BIG_XXX(y1,stringy1);
-    read_BIG_XXX(y2,stringy2);
-
-    FP2_YYY_from_BIGs(&x,x1,x2);
-    FP2_YYY_from_BIGs(&y,y1,y2);
+    read_FP2_YYY(&x,stringx);
+    read_FP2_YYY(&y,stringy);
 
     FP4_YYY_from_FP2s(fp4,&x,&y);
 }
 
 // Read a structure of the type [[[ax1,ax2],[ay1,ay2]],[[bx1,bx2],[by1,by2]],[[cx1,cx2],[cy1,cy2]]]
-void read_FP12_YYY(FP12_YYY *fp12, char *stringax1)
+void read_FP12_YYY(FP12_YYY *fp12, char *stringx)
 {
-    char *stringax2, *stringay1, *stringay2, *stringbx1, *stringbx2, *stringby1, *stringby2, *stringcx1, *stringcx2, *stringcy1, *stringcy2, *end;
-    BIG_XXX ax1,ax2,ay1,ay2,bx1,bx2,by1,by2,cx1,cx2,cy1,cy2;
-    FP2_YYY ax,ay,bx,by,cx,cy;
-    FP4_YYY a,b,c;
+    char *stringy, *stringz, *end;
+    FP4_YYY x,y,z;
 
-    stringax1 += 3;
-    stringax2 = strchr(stringax1,',');
-    if (stringax2 == NULL)
+    stringy = strchr(++stringx,']');
+    if (stringy == NULL)
     {
-        printf("ERROR unexpected test vector\n");
+        printf("ERROR unexpected test vector a\n");
         exit(EXIT_FAILURE);
     }
-    stringax2[0] = '\0';
-    stringax2++;
-    stringay1 = strchr(stringax2,']');
-    if (stringay1 == NULL)
+    stringy = strchr(++stringy,']');
+    if (stringy == NULL)
     {
-        printf("ERROR unexpected test vector\n");
+        printf("ERROR unexpected test vector b\n");
         exit(EXIT_FAILURE);
     }
-    stringay1[0] = '\0';
-    stringay1 += 3;
-    stringay2 = strchr(stringay1,',');
-    if (stringay2 == NULL)
+    stringy+=2;
+    *stringy = '\0';
+
+    stringz = strchr(++stringy,']');
+    if (stringz == NULL)
     {
-        printf("ERROR unexpected test vector\n");
+        printf("ERROR unexpected test vector c\n");
         exit(EXIT_FAILURE);
     }
-    stringay2[0] = '\0';
-    stringay2++;
-    stringbx1 = strchr(stringay2,']');
-    if (stringbx1 == NULL)
+    stringz = strchr(++stringz,']');
+    if (stringz == NULL)
     {
-        printf("ERROR unexpected test vector\n");
+        printf("ERROR unexpected test vector d\n");
         exit(EXIT_FAILURE);
     }
-    stringbx1[0] = '\0';
-    stringbx1 += 5;
-    stringbx2 = strchr(stringbx1,',');
-    if (stringbx2 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringbx2[0] = '\0';
-    stringbx2++;
-    stringby1 = strchr(stringbx2,']');
-    if (stringay1 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringby1[0] = '\0';
-    stringby1 += 3;
-    stringby2 = strchr(stringby1,',');
-    if (stringay2 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringby2[0] = '\0';
-    stringby2++;
-    stringcx1 = strchr(stringby2,']');
-    if (stringcx1 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringcx1[0] = '\0';
-    stringcx1 += 5;
-    stringcx2 = strchr(stringcx1,',');
-    if (stringcx2 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringcx2[0] = '\0';
-    stringcx2++;
-    stringcy1 = strchr(stringcx2,']');
-    if (stringcy1 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringcy1[0] = '\0';
-    stringcy1 += 3;
-    stringcy2 = strchr(stringcy1,',');
-    if (stringay2 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringcy2[0] = '\0';
-    stringcy2++;
-    end = strchr(stringcy2,']');
+    stringz+=2;
+    *stringz = '\0';
+
+    end = strchr(++stringz,']');
     if (end == NULL)
     {
-        printf("ERROR unexpected test vector\n");
+        printf("ERROR unexpected test vector e\n");
         exit(EXIT_FAILURE);
     }
-    end[0] = '\0';
+    end = strchr(++end,']');
+    if (end == NULL)
+    {
+        printf("ERROR unexpected test vector f\n");
+        exit(EXIT_FAILURE);
+    }
+    end+=2;
+    *end = '\0';
 
-    read_BIG_XXX(ax1,stringax1);
-    read_BIG_XXX(ax2,stringax2);
-    read_BIG_XXX(ay1,stringay1);
-    read_BIG_XXX(ay2,stringay2);
-    read_BIG_XXX(bx1,stringbx1);
-    read_BIG_XXX(bx2,stringbx2);
-    read_BIG_XXX(by1,stringby1);
-    read_BIG_XXX(by2,stringby2);
-    read_BIG_XXX(cx1,stringcx1);
-    read_BIG_XXX(cx2,stringcx2);
-    read_BIG_XXX(cy1,stringcy1);
-    read_BIG_XXX(cy2,stringcy2);
+    read_FP4_YYY(&x,stringx);
+    read_FP4_YYY(&y,stringy);
+    read_FP4_YYY(&z,stringz);
 
-    FP2_YYY_from_BIGs(&ax,ax1,ax2);
-    FP2_YYY_from_BIGs(&ay,ay1,ay2);
-    FP2_YYY_from_BIGs(&bx,bx1,bx2);
-    FP2_YYY_from_BIGs(&by,by1,by2);
-    FP2_YYY_from_BIGs(&cx,cx1,cx2);
-    FP2_YYY_from_BIGs(&cy,cy1,cy2);
-
-    FP4_YYY_from_FP2s(&a,&ax,&ay);
-    FP4_YYY_from_FP2s(&b,&bx,&by);
-    FP4_YYY_from_FP2s(&c,&cx,&cy);
-
-    FP12_YYY_from_FP4s(fp12,&a,&b,&c);
+    FP12_YYY_from_FP4s(fp12,&x,&y,&z);
 
     FP12_YYY_reduce(fp12);
     FP12_YYY_norm(fp12);
@@ -640,21 +542,6 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4trace))
             {
                 printf("ERROR computing trace of FP12, line %d\n",i);
-                exit(EXIT_FAILURE);
-            }
-        }
-        // Calculates FP4 trace of an FP12 raised to the power of a BIG number
-        if (!strncmp(line,FP4xtrpowline, strlen(FP4xtrpowline)))
-        {
-            len = strlen(FP4xtrpowline);
-            linePtr = line + len;
-            read_FP4_YYY(&FP4xtrpow,linePtr);
-            FP4_YYY_xtr_pow(&FP4aux1,&FP4trace,BIGsc[0]);
-            FP4_YYY_reduce(&FP4aux1);
-            FP4_YYY_norm(&FP4aux1);
-            if(!FP4_YYY_equals(&FP4aux1,&FP4xtrpow))
-            {
-                printf("ERROR computing FP4 trace of an FP12 raised to the power of a BIG number, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
         }
