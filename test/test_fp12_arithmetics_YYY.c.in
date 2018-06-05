@@ -52,7 +52,6 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
     BIG_XXX x,y;
 
     stringy = strchr(++stringx,',');
-
     if (stringy == NULL)
     {
         printf("ERROR unexpected test vector\n");
@@ -61,7 +60,6 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
     *stringy = '\0';
 
     end = strchr(++stringy,']');
-
     if (end == NULL)
     {
         printf("ERROR unexpected test vector\n");
