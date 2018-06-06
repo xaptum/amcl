@@ -35,19 +35,19 @@
 
 // #define DEBUG
 
-void rand_str(char *dest, size_t length,csprng *RNG)
+void rand_str(octet* dest, csprng *RNG)
 {
     BIG_XXX r;
     char charset[] = "0123456789@.*"
                      "abcdefghijklmnopqrstuvwxyz"
                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    while (length-- > 0)
+
+    for(;dest->len < dest->max;dest->len++)
     {
         BIG_XXX_random(r,RNG);
-        size_t index = r[0] % (sizeof charset);
-        *dest++ = charset[index];
+        size_t index = r[0] % (sizeof charset -1);
+        dest->val[dest->len] = charset[index];
     }
-    *dest = '\0';
 }
 
 int main()
@@ -197,8 +197,11 @@ int main()
         OCT_output(&MS2);
 
         // Alice's ID
-        rand_str(alice_id,255,&RNG);
-        printf("ALICE ID: %s\n", alice_id);
+        rand_str(&IdA,&RNG);
+        printf("ALICE ID:");
+        OCT_output_string(&IdA);
+        printf("\n");
+
 
         // TA: Generate Alice's sender key
         HASH_ID(HASH_TYPE_WCC_ZZZ,&IdA,&AHV);
@@ -256,8 +259,10 @@ int main()
         OCT_output(&ATPG1);
 
         // Bob's ID
-        rand_str(bob_id,255,&RNG);
-        printf("BOB ID: %s\n", bob_id);
+        rand_str(&IdB,&RNG);
+        printf("BOB ID:");
+        OCT_output_string(&IdB);
+        printf("\n");
 
         // TA: Generate Bob's receiver key
         HASH_ID(HASH_TYPE_WCC_ZZZ,&IdB,&BHV);
