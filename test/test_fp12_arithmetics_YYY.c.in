@@ -213,14 +213,16 @@ int main(int argc, char** argv)
     const char* FP12powline = "FP12pow = ";
     FP12_YYY FP12pinpow;
     const char* FP12pinpowline = "FP12pinpow = ";
+    FP4_YYY FP12compow1;
+    const char* FP12compow1line = "FP12compow1 = ";
+    FP4_YYY FP12compow2;
+    const char* FP12compow2line = "FP12compow2 = ";
     FP12_YYY FP12pow4;
     const char* FP12pow4line = "FP12pow4 = ";
     FP12_YYY FP12frob;
     const char* FP12frobline = "FP12frob = ";
     FP4_YYY FP4trace;
     const char* FP4traceline = "FP4trace = ";
-    FP4_YYY FP4xtrpow;
-    const char* FP4xtrpowline = "FP4xtrpow = ";
 
 
     BIG_XXX_rcopy(M,Modulus_YYY);
@@ -492,6 +494,45 @@ int main(int argc, char** argv)
             }
             j++;
         }
+        // Test fucntion FP12_YYY_compow
+        if (!strncmp(line,FP12compow1line, strlen(FP12compow1line)))
+        {
+            len = strlen(FP12compow1line);
+            linePtr = line + len;
+            read_FP4_YYY(&FP12compow1,linePtr);
+            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_compow(&FP4aux1,&FP12aux1,BIGsc[0],BIGsc[1]);
+            FP4_YYY_reduce(&FP4aux1);
+            FP4_YYY_norm(&FP4aux1);
+            if(!FP4_YYY_equals(&FP4aux1,&FP12compow1))
+            {
+                FP4_YYY_output(&FP4aux1);
+                printf("\n\n");
+                FP4_YYY_output(&FP12compow1);
+                printf("\n\n");
+                printf("ERROR testing function FP12_compow, line %d\n",i);
+                exit(EXIT_FAILURE);
+            }
+        }
+        if (!strncmp(line,FP12compow2line, strlen(FP12compow2line)))
+        {
+            len = strlen(FP12compow2line);
+            linePtr = line + len;
+            read_FP4_YYY(&FP12compow2,linePtr);
+            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_compow(&FP4aux1,&FP12aux1,BIGsc[1],BIGsc[0]);
+            FP4_YYY_reduce(&FP4aux1);
+            FP4_YYY_norm(&FP4aux1);
+            if(!FP4_YYY_equals(&FP4aux1,&FP12compow2))
+            {
+                FP4_YYY_output(&FP4aux1);
+                printf("\n\n");
+                FP4_YYY_output(&FP12compow2);
+                printf("\n\n");
+                printf("ERROR testing function FP12_compow, line %d\n",i);
+                exit(EXIT_FAILURE);
+            }
+        }
         // Test function FP12_YYY_pow4
         if (!strncmp(line,FP12pow4line, strlen(FP12pow4line)))
         {
@@ -519,10 +560,6 @@ int main(int argc, char** argv)
             FP12_YYY_norm(&FP12aux1);
             if(!FP12_YYY_equals(&FP12aux1,&FP12frob))
             {
-                FP12_YYY_output(&FP12aux1);
-                printf("\n\n");
-                FP12_YYY_output(&FP12frob);
-                printf("\n\n");
                 printf("ERROR in raising FP12 by an internal modulus p, using the Frobenius constant f, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
