@@ -33,6 +33,13 @@ foreach(curve ${AMCL_CURVE})
     target_link_libraries(benchtest_pair_${TC} PRIVATE amcl_pairing_${TC})
   endif()
 
+  # MPIN Benchmark
+  if(TARGET amcl_mpin_${TC})
+    amcl_configure_file_curve(benchtest_mpin_ZZZ.c.in benchtest_mpin_${TC}.c "${curve}" benchtest_mpin_${TC}_GEN_SRCS)
+    add_executable(benchtest_mpin_${TC} ${benchtest_mpin_${TC}_GEN_SRCS})
+    target_link_libraries(benchtest_mpin_${TC} PRIVATE amcl_mpin_${TC})
+  endif()
+  
 endforeach()
 
 foreach(level ${AMCL_RSA})
