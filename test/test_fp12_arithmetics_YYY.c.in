@@ -181,11 +181,12 @@ int main(int argc, char** argv)
     FP4_YYY FP4aux1;
     FP12_YYY FP12aux1, FP12aux2;
 
-    FP12_YYY FP_12[4];
+    FP12_YYY FP_12[5];
     const char* FP12_1line = "FP12_1 = ";
     const char* FP12_2line = "FP12_2 = ";
     const char* FP12_3line = "FP12_3 = ";
     const char* FP12_4line = "FP12_4 = ";
+    const char* FP12_cline = "FP12_c = ";
     FP12_YYY FP_12_smul_y_dtype;
     const char* FP12smul_y_dtypeline = "FP12smul_y_dtype = ";
     FP12_YYY FP_12_smul_y_mtype;
@@ -204,26 +205,27 @@ int main(int argc, char** argv)
     const char* FP12smulmtypeline = "FP12smul_mtype = ";
     FP12_YYY FP12inv;
     const char* FP12invline = "FP12inv = ";
-    BIG_XXX BIGsc[4];
+    BIG_XXX BIGsc[6];
     const char* BIGsc1line = "BIGsc1 = ";
     const char* BIGsc2line = "BIGsc2 = ";
     const char* BIGsc3line = "BIGsc3 = ";
     const char* BIGsc4line = "BIGsc4 = ";
+    const char* BIGscsline = "BIGscs = ";
+    const char* BIGscoline = "BIGsco = ";
     FP12_YYY FP12pow;
     const char* FP12powline = "FP12pow = ";
     FP12_YYY FP12pinpow;
     const char* FP12pinpowline = "FP12pinpow = ";
-    FP4_YYY FP12compow1;
-    const char* FP12compow1line = "FP12compow1 = ";
-    FP4_YYY FP12compow2;
-    const char* FP12compow2line = "FP12compow2 = ";
+    FP4_YYY FP12compows;
+    const char* FP12compowsline = "FP12compows = ";
+    FP4_YYY FP12compow;
+    const char* FP12compowline = "FP12compow = ";
     FP12_YYY FP12pow4;
     const char* FP12pow4line = "FP12pow4 = ";
     FP12_YYY FP12frob;
     const char* FP12frobline = "FP12frob = ";
     FP4_YYY FP4trace;
     const char* FP4traceline = "FP4trace = ";
-
 
     BIG_XXX_rcopy(M,Modulus_YYY);
     BIG_XXX_rcopy(Fr_a,Fra_YYY);
@@ -289,21 +291,28 @@ int main(int argc, char** argv)
         {
             len = strlen(FP12_2line);
             linePtr = line + len;
-            read_FP12_YYY(&FP_12[1],linePtr);
+            read_FP12_YYY(FP_12+1,linePtr);
         }
         // Read third FP12
         if (!strncmp(line,FP12_3line, strlen(FP12_3line)))
         {
             len = strlen(FP12_3line);
             linePtr = line + len;
-            read_FP12_YYY(&FP_12[2],linePtr);
+            read_FP12_YYY(FP_12+2,linePtr);
         }
         // Read fourth FP12
         if (!strncmp(line,FP12_4line, strlen(FP12_4line)))
         {
             len = strlen(FP12_4line);
             linePtr = line + len;
-            read_FP12_YYY(&FP_12[3],linePtr);
+            read_FP12_YYY(FP_12+3,linePtr);
+        }
+        // Read compow FP12
+        if (!strncmp(line,FP12_cline, strlen(FP12_cline)))
+        {
+            len = strlen(FP12_cline);
+            linePtr = line + len;
+            read_FP12_YYY(FP_12+4,linePtr);
         }
         // Read y for M-TYPE smul test
         if (!strncmp(line,FP12smul_y_mtypeline, strlen(FP12smul_y_mtypeline)))
@@ -325,7 +334,7 @@ int main(int argc, char** argv)
             len = strlen(FP12conjline);
             linePtr = line + len;
             read_FP12_YYY(&FP12conj,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
             FP12_YYY_conj(&FP12aux1,&FP12aux1);
             if(!FP12_YYY_equals(&FP12aux1,&FP12conj))
             {
@@ -339,10 +348,10 @@ int main(int argc, char** argv)
             len = strlen(FP12mulline);
             linePtr = line + len;
             read_FP12_YYY(&FP12mul,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
-            FP12_YYY_mul(&FP12aux1,&FP_12[1]);
-            FP12_YYY_copy(&FP12aux2,&FP_12[1]);
-            FP12_YYY_mul(&FP12aux2,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
+            FP12_YYY_mul(&FP12aux1,FP_12+1);
+            FP12_YYY_copy(&FP12aux2,FP_12+1);
+            FP12_YYY_mul(&FP12aux2,FP_12);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
             FP12_YYY_reduce(&FP12aux2);
@@ -359,7 +368,7 @@ int main(int argc, char** argv)
             len = strlen(FP12squareline);
             linePtr = line + len;
             read_FP12_YYY(&FP12square,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
             FP12_YYY_sqr(&FP12aux1,&FP12aux1);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
@@ -375,7 +384,7 @@ int main(int argc, char** argv)
             len = strlen(FP12usquareline);
             linePtr = line + len;
             read_FP12_YYY(&FP12usquare,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
             FP12_YYY_usqr(&FP12aux1,&FP12aux1);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
@@ -391,7 +400,7 @@ int main(int argc, char** argv)
             len = strlen(FP12smuldtypeline);
             linePtr = line + len;
             read_FP12_YYY(&FP12smul_dtype,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
             FP12_YYY_smul(&FP12aux1,&FP_12_smul_y_dtype,D_TYPE);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
@@ -407,7 +416,7 @@ int main(int argc, char** argv)
             len = strlen(FP12smulmtypeline);
             linePtr = line + len;
             read_FP12_YYY(&FP12smul_mtype,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
             FP12_YYY_smul(&FP12aux1,&FP_12_smul_y_mtype,M_TYPE);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
@@ -461,13 +470,27 @@ int main(int argc, char** argv)
             linePtr = line + len;
             read_BIG_XXX(BIGsc[3],linePtr);
         }
+        // Read small BIG
+        if (!strncmp(line,BIGscsline, strlen(BIGscsline)))
+        {
+            len = strlen(BIGscsline);
+            linePtr = line + len;
+            read_BIG_XXX(BIGsc[4],linePtr);
+        }
+        // Read order BIG
+        if (!strncmp(line,BIGscoline, strlen(BIGscoline)))
+        {
+            len = strlen(BIGscoline);
+            linePtr = line + len;
+            read_BIG_XXX(BIGsc[5],linePtr);
+        }
         // Test power by a BIG
         if (!strncmp(line,FP12powline, strlen(FP12powline)))
         {
             len = strlen(FP12powline);
             linePtr = line + len;
             read_FP12_YYY(&FP12pow,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
             FP12_YYY_pow(&FP12aux1,&FP12aux1,BIGsc[0]);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
@@ -483,7 +506,7 @@ int main(int argc, char** argv)
             len = strlen(FP12pinpowline);
             linePtr = line + len;
             read_FP12_YYY(&FP12pinpow,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
             FP12_YYY_pinpow(&FP12aux1,j,10);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
@@ -494,42 +517,39 @@ int main(int argc, char** argv)
             }
             j++;
         }
-        // Test fucntion FP12_YYY_compow
-        if (!strncmp(line,FP12compow1line, strlen(FP12compow1line)))
+        // Test fucntion FP12_YYY_compow with small integer [< Modulus mod Curve_Order]
+        if (!strncmp(line,FP12compowsline, strlen(FP12compowsline)))
         {
-            len = strlen(FP12compow1line);
+            len = strlen(FP12compowsline);
             linePtr = line + len;
-            read_FP4_YYY(&FP12compow1,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
-            FP12_YYY_compow(&FP4aux1,&FP12aux1,BIGsc[0],BIGsc[1]);
+            read_FP4_YYY(&FP12compows,linePtr);
+            FP12_YYY_copy(&FP12aux1,FP_12+4);
+            FP12_YYY_compow(&FP4aux1,&FP12aux1,BIGsc[4],BIGsc[5]);
             FP4_YYY_reduce(&FP4aux1);
             FP4_YYY_norm(&FP4aux1);
-            if(!FP4_YYY_equals(&FP4aux1,&FP12compow1))
+            if(!FP4_YYY_equals(&FP4aux1,&FP12compows))
             {
                 FP4_YYY_output(&FP4aux1);
                 printf("\n\n");
-                FP4_YYY_output(&FP12compow1);
+                FP4_YYY_output(&FP12compows);
                 printf("\n\n");
-                printf("ERROR testing function FP12_compow, line %d\n",i);
+                printf("ERROR testing function FP12_compow with small integer, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
         }
-        if (!strncmp(line,FP12compow2line, strlen(FP12compow2line)))
+        // Test fucntion FP12_YYY_compow with big integer [> Modulus mod Curve_Order]
+        if (!strncmp(line,FP12compowline, strlen(FP12compowline)))
         {
-            len = strlen(FP12compow2line);
+            len = strlen(FP12compowline);
             linePtr = line + len;
-            read_FP4_YYY(&FP12compow2,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
-            FP12_YYY_compow(&FP4aux1,&FP12aux1,BIGsc[1],BIGsc[0]);
+            read_FP4_YYY(&FP12compow,linePtr);
+            FP12_YYY_copy(&FP12aux1,FP_12+4);
+            FP12_YYY_compow(&FP4aux1,&FP12aux1,BIGsc[0],BIGsc[5]);
             FP4_YYY_reduce(&FP4aux1);
             FP4_YYY_norm(&FP4aux1);
-            if(!FP4_YYY_equals(&FP4aux1,&FP12compow2))
+            if(!FP4_YYY_equals(&FP4aux1,&FP12compow))
             {
-                FP4_YYY_output(&FP4aux1);
-                printf("\n\n");
-                FP4_YYY_output(&FP12compow2);
-                printf("\n\n");
-                printf("ERROR testing function FP12_compow, line %d\n",i);
+                printf("ERROR testing function FP12_compow with big integer, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
         }
@@ -554,7 +574,7 @@ int main(int argc, char** argv)
             len = strlen(FP12frobline);
             linePtr = line + len;
             read_FP12_YYY(&FP12frob,linePtr);
-            FP12_YYY_copy(&FP12aux1,&FP_12[0]);
+            FP12_YYY_copy(&FP12aux1,FP_12);
             FP12_YYY_frob(&FP12aux1,&Frob);
             FP12_YYY_reduce(&FP12aux1);
             FP12_YYY_norm(&FP12aux1);
