@@ -51,22 +51,21 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
     char *stringy, *end;
     BIG_XXX x,y;
 
-    stringx++;
-    stringy = strchr(stringx,',');
+    stringy = strchr(++stringx,',');
     if (stringy == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    stringy[0] = '\0';
-    stringy++;
-    end = strchr(stringy,']');
+    *stringy = '\0';
+
+    end = strchr(++stringy,']');
     if (end == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    end[0] = '\0';
+    *end = '\0';
 
     read_BIG_XXX(x,stringx);
     read_BIG_XXX(y,stringy);
@@ -74,52 +73,29 @@ void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
     FP2_YYY_from_BIGs(fp2,x,y);
 }
 
-void read_FP4_YYY(FP4_YYY *fp4, char* stringx1)
+void read_FP4_YYY(FP4_YYY *fp4, char* stringx)
 {
-    char *stringx2, *stringy1, *stringy2, *end;
-    BIG_XXX x1,x2,y1,y2;
+    char *stringy, *end;
     FP2_YYY x,y;
 
-    stringx1 += 2;
-    stringx2 = strchr(stringx1,',');
-    if (stringx2 == NULL)
+    stringy = strchr(++stringx,']');
+    if (stringy == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    stringx2[0] = '\0';
-    stringx2 ++;
-    stringy1 = strchr(stringx2,']');
-    if (stringy1 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringy1[0] = '\0';
-    stringy1 += 3;
-    stringy2 = strchr(stringy1,',');
-    if (stringy2 == NULL)
-    {
-        printf("ERROR unexpected test vector\n");
-        exit(EXIT_FAILURE);
-    }
-    stringy2[0] = '\0';
-    stringy2++;
-    end = strchr(stringy2,']');
+    *(++stringy) = '\0';
+
+    end = strchr(++stringy,']');
     if (end == NULL)
     {
         printf("ERROR unexpected test vector\n");
         exit(EXIT_FAILURE);
     }
-    end[0] = '\0';
+    *(++end) = '\0';
 
-    read_BIG_XXX(x1,stringx1);
-    read_BIG_XXX(x2,stringx2);
-    read_BIG_XXX(y1,stringy1);
-    read_BIG_XXX(y2,stringy2);
-
-    FP2_YYY_from_BIGs(&x,x1,x2);
-    FP2_YYY_from_BIGs(&y,y1,y2);
+    read_FP2_YYY(&x,stringx);
+    read_FP2_YYY(&y,stringy);
 
     FP4_YYY_from_FP2s(fp4,&x,&y);
 }
@@ -144,6 +120,11 @@ int main(int argc, char** argv)
     const char* FP4_1line = "FP4_1 = ";
     FP4_YYY FP4_2;
     const char* FP4_2line = "FP4_2 = ";
+    FP4_YYY FP12traces[4];
+    const char* FP12_1line = "FP12_1 = ";
+    const char* FP12_2line = "FP12_2 = ";
+    const char* FP12_3line = "FP12_3 = ";
+    const char* FP12_4line = "FP12_4 = ";
     FP4_YYY FP4add;
     const char* FP4addline = "FP4add = ";
     FP4_YYY FP4neg;
@@ -168,31 +149,37 @@ int main(int argc, char** argv)
     const char* FP4invline = "FP4inv = ";
     FP4_YYY FP4mulj;
     const char* FP4muljline = "FP4mulj = ";
-    BIG_XXX BIGsc;
-    const char* BIGscline = "BIGsc = ";
+    BIG_XXX BIGsc1;
+    const char* BIGsc1line = "BIGsc1 = ";
+    BIG_XXX BIGsc2;
+    const char* BIGsc2line = "BIGsc2 = ";
     FP4_YYY FP4pow;
     const char* FP4powline = "FP4pow = ";
     FP4_YYY FP4_xtrA;
     const char* FP4_xtrAline = "FP4_xtrA = ";
     FP4_YYY FP4_xtrD;
     const char* FP4_xtrDline = "FP4_xtrD = ";
+    FP4_YYY FP4_xtrpow;
+    const char* FP4_xtrpowline = "FP4_xtrpow = ";
+    FP4_YYY FP4_xtrpow2;
+    const char* FP4_xtrpow2line = "FP4_xtrpow2 = ";
 
-// Set to zero
+    // Set to zero
     FP4_YYY_zero(&FP4aux1);
     FP4_YYY_zero(&FP4aux2);
 
-// Testing equal function and set zero function
+    // Testing equal function and set zero function
     if(!FP4_YYY_equals(&FP4aux1,&FP4aux2) || !FP4_YYY_iszilch(&FP4aux1) || !FP4_YYY_iszilch(&FP4aux2) || !FP4_YYY_isreal(&FP4aux1))
     {
         printf("ERROR comparing FP4s or setting FP4 to zero FP\n");
         exit(EXIT_FAILURE);
     }
 
-// Set to one
+    // Set to one
     FP4_YYY_one(&FP4aux1);
     FP4_YYY_one(&FP4aux2);
 
-// Testing equal function and set one function
+    // Testing equal function and set one function
     if(!FP4_YYY_equals(&FP4aux1,&FP4aux2) || !FP4_YYY_isunity(&FP4aux1) || !FP4_YYY_isunity(&FP4aux2) || !FP4_YYY_isreal(&FP4aux1) || FP4_YYY_iszilch(&FP4aux1))
     {
         printf("ERROR comparing FP4s or setting FP4 to unity FP\n");
@@ -210,20 +197,20 @@ int main(int argc, char** argv)
     while (fgets(line, LINE_LEN, fp) != NULL)
     {
         i++;
-// Read first FP4 and perform some tests
+        // Read first FP4 and perform some tests
         if (!strncmp(line,FP4_1line, strlen(FP4_1line)))
         {
             len = strlen(FP4_1line);
             linePtr = line + len;
             read_FP4_YYY(&FP4_1,linePtr);
-// test FP4_from_FP2s
+            // test FP4_from_FP2s
             FP4_YYY_from_FP2s(&FP4aux1,&FP4_1.a,&FP4_1.b);
             if(!FP4_YYY_equals(&FP4aux1,&FP4_1))
             {
                 printf("ERROR in generating FP4 from two FP2s, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
-// test FP4_from_FP2 and FP4_isreal
+            // test FP4_from_FP2 and FP4_isreal
             FP4_YYY_from_FP2(&FP4aux1,&FP4_1.a);
             FP4_YYY_copy(&FP4aux2,&FP4_1);
             FP2_YYY_zero(&FP4aux2.b);
@@ -233,14 +220,42 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Read second FP4
+        // Read second FP4
         if (!strncmp(line,FP4_2line, strlen(FP4_2line)))
         {
             len = strlen(FP4_2line);
             linePtr = line + len;
             read_FP4_YYY(&FP4_2,linePtr);
         }
-// Addition test
+        // Read first FP12 trace
+        if (!strncmp(line,FP12_1line, strlen(FP12_1line)))
+        {
+            len = strlen(FP12_1line);
+            linePtr = line + len;
+            read_FP4_YYY(FP12traces,linePtr);
+        }
+        // Read second FP12 trace
+        if (!strncmp(line,FP12_2line, strlen(FP12_2line)))
+        {
+            len = strlen(FP12_2line);
+            linePtr = line + len;
+            read_FP4_YYY(FP12traces+1,linePtr);
+        }
+        // Read third FP12 trace
+        if (!strncmp(line,FP12_3line, strlen(FP12_3line)))
+        {
+            len = strlen(FP12_3line);
+            linePtr = line + len;
+            read_FP4_YYY(FP12traces+2,linePtr);
+        }
+        // Read fourth FP12 trace
+        if (!strncmp(line,FP12_4line, strlen(FP12_4line)))
+        {
+            len = strlen(FP12_4line);
+            linePtr = line + len;
+            read_FP4_YYY(FP12traces+3,linePtr);
+        }
+        // Addition test
         if (!strncmp(line,FP4addline, strlen(FP4addline)))
         {
             len = strlen(FP4addline);
@@ -249,7 +264,7 @@ int main(int argc, char** argv)
             FP4_YYY_copy(&FP4aux1,&FP4_1);
             FP4_YYY_copy(&FP4aux2,&FP4_2);
             FP4_YYY_add(&FP4aux1,&FP4aux1,&FP4aux2);
-// test commutativity P+Q = Q+P
+            // test commutativity P+Q = Q+P
             FP4_YYY_copy(&FP4aux3,&FP4_1);
             FP4_YYY_add(&FP4aux2,&FP4aux2,&FP4aux3);
             FP4_YYY_reduce(&FP4aux1);
@@ -261,7 +276,7 @@ int main(int argc, char** argv)
                 printf("ERROR adding two FP4, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
-// test associativity (P+Q)+R = P+(Q+R)
+            // test associativity (P+Q)+R = P+(Q+R)
             FP4_YYY_copy(&FP4aux1,&FP4_1);
             FP4_YYY_copy(&FP4aux3,&FP4_1);
             FP4_YYY_copy(&FP4aux2,&FP4_2);
@@ -280,7 +295,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Test negative of an FP4
+        // Test negative of an FP4
         if (!strncmp(line,FP4negline, strlen(FP4negline)))
         {
             len = strlen(FP4negline);
@@ -296,7 +311,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Subtraction test
+        // Subtraction test
         if (!strncmp(line,FP4subline, strlen(FP4subline)))
         {
             len = strlen(FP4subline);
@@ -313,7 +328,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Test conjugate
+        // Test conjugate
         if (!strncmp(line,FP4conjline, strlen(FP4conjline)))
         {
             len = strlen(FP4conjline);
@@ -329,7 +344,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Test negative conjugate
+        // Test negative conjugate
         if (!strncmp(line,FP4nconjline, strlen(FP4nconjline)))
         {
             len = strlen(FP4nconjline);
@@ -345,14 +360,14 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Read multiplicator
+        // Read multiplicator
         if (!strncmp(line,FP2scline, strlen(FP2scline)))
         {
             len = strlen(FP2scline);
             linePtr = line + len;
             read_FP2_YYY(&FP2sc,linePtr);
         }
-// Multiplication by FP2
+        // Multiplication by FP2
         if (!strncmp(line,FP4pmulline, strlen(FP4pmulline)))
         {
             len = strlen(FP4pmulline);
@@ -367,7 +382,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Multiplication by j = 0..10
+        // Multiplication by j = 0..10
         if (!strncmp(line,FP4imulline, strlen(FP4imulline)))
         {
             len = strlen(FP4imulline);
@@ -383,7 +398,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Square test
+        // Square test
         if (!strncmp(line,FP4sqrline, strlen(FP4sqrline)))
         {
             len = strlen(FP4sqrline);
@@ -399,7 +414,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Multiplication between two FP4s
+        // Multiplication between two FP4s
         if (!strncmp(line,FP4mulline, strlen(FP4mulline)))
         {
             len = strlen(FP4mulline);
@@ -414,7 +429,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Inverse
+        // Inverse
         if (!strncmp(line,FP4invline, strlen(FP4invline)))
         {
             len = strlen(FP4invline);
@@ -430,7 +445,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Test multiplication of an FP4 instance by sqrt(1+sqrt(-1))
+        // Test multiplication of an FP4 instance by sqrt(1+sqrt(-1))
         if (!strncmp(line,FP4muljline, strlen(FP4muljline)))
         {
             len = strlen(FP4muljline);
@@ -446,20 +461,26 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Read exponent
-        if (!strncmp(line,BIGscline, strlen(BIGscline)))
+        // Read exponent
+        if (!strncmp(line,BIGsc1line, strlen(BIGsc1line)))
         {
-            len = strlen(BIGscline);
+            len = strlen(BIGsc1line);
             linePtr = line + len;
-            read_BIG_XXX(BIGsc,linePtr);
+            read_BIG_XXX(BIGsc1,linePtr);
         }
-// Raise FP4 by BIG power
+        if (!strncmp(line,BIGsc2line, strlen(BIGsc2line)))
+        {
+            len = strlen(BIGsc2line);
+            linePtr = line + len;
+            read_BIG_XXX(BIGsc2,linePtr);
+        }
+        // Raise FP4 by BIG power
         if (!strncmp(line,FP4powline, strlen(FP4powline)))
         {
             len = strlen(FP4powline);
             linePtr = line + len;
             read_FP4_YYY(&FP4pow,linePtr);
-            FP4_YYY_pow(&FP4aux1,&FP4_1,BIGsc);
+            FP4_YYY_pow(&FP4aux1,&FP4_1,BIGsc1);
             FP4_YYY_reduce(&FP4aux1);
             if(!FP4_YYY_equals(&FP4aux1,&FP4pow))
             {
@@ -467,7 +488,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Test the XTR addition function r=w*x-conj(x)*y+z
+        // Test the XTR addition function r=w*x-conj(x)*y+z
         if (!strncmp(line,FP4_xtrAline, strlen(FP4_xtrAline)))
         {
             len = strlen(FP4_xtrAline);
@@ -481,7 +502,7 @@ int main(int argc, char** argv)
                 exit(EXIT_FAILURE);
             }
         }
-// Test the XTR doubling function r=x^2-2*conj(x)
+        // Test the XTR doubling function r=x^2-2*conj(x)
         if (!strncmp(line,FP4_xtrDline, strlen(FP4_xtrDline)))
         {
             len = strlen(FP4_xtrDline);
@@ -492,6 +513,36 @@ int main(int argc, char** argv)
             if(!FP4_YYY_equals(&FP4aux1,&FP4_xtrD))
             {
                 printf("ERROR in testing the XTR doubling function r=x^2-2*conj(x), line %d\n",i);
+                exit(EXIT_FAILURE);
+            }
+        }
+        // Calculates FP4 trace of an FP12 raised to the power of a BIG number
+        if (!strncmp(line,FP4_xtrpowline, strlen(FP4_xtrpowline)))
+        {
+            len = strlen(FP4_xtrpowline);
+            linePtr = line + len;
+            read_FP4_YYY(&FP4_xtrpow,linePtr);
+            FP4_YYY_xtr_pow(&FP4aux1,FP12traces,BIGsc1);
+            FP4_YYY_reduce(&FP4aux1);
+            if(!FP4_YYY_equals(&FP4aux1,&FP4_xtrpow))
+            {
+                printf("ERROR computing FP4 trace of an FP12 raised to the power of a BIG number, line %d\n",i);
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // Calculates FP4 trace of two FP12 raised to the power of two BIG numbers
+        if (!strncmp(line,FP4_xtrpow2line, strlen(FP4_xtrpow2line)))
+        {
+            len = strlen(FP4_xtrpow2line);
+            linePtr = line + len;
+            read_FP4_YYY(&FP4_xtrpow2,linePtr);
+            FP4_YYY_xtr_pow2(&FP4aux1,FP12traces+1,FP12traces,FP12traces+2,FP12traces+3,BIGsc2,BIGsc1);
+            FP4_YYY_reduce(&FP4aux1);
+            FP4_YYY_norm(&FP4aux1);
+            if(!FP4_YYY_equals(&FP4aux1,&FP4_xtrpow2))
+            {
+                printf("ERROR computing FP4 trace of an FP12 raised to the power of a BIG number, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
         }
