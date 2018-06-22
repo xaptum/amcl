@@ -48,12 +48,24 @@ void read_BIG_XXX(BIG_XXX A, char* string)
 
 void read_FP2_YYY(FP2_YYY *fp2, char* stringx)
 {
-    char *stringy;
+    char *stringy, *end;
     BIG_XXX x,y;
 
-    stringy = strchr(stringx,',');
-    stringy[0] = '\0';
-    stringy++;
+    stringy = strchr(++stringx,',');
+    if (stringy == NULL)
+    {
+        printf("ERROR unexpected test vector\n");
+        exit(EXIT_FAILURE);
+    }
+    *stringy = '\0';
+
+    end = strchr(++stringy,']');
+    if (end == NULL)
+    {
+        printf("ERROR unexpected test vector\n");
+        exit(EXIT_FAILURE);
+    }
+    *end = '\0';
 
     read_BIG_XXX(x,stringx);
     read_BIG_XXX(y,stringy);
@@ -221,12 +233,14 @@ int main(int argc, char** argv)
 // test commutativity P+Q = Q+P
             FP2_YYY_copy(&FP2aux3,&FP2_1);
             FP2_YYY_add(&FP2aux2,&FP2aux2,&FP2aux3);
-            FP2_YYY_reduce(&FP2aux1);
-            FP2_YYY_norm(&FP2aux1);
-            FP2_YYY_reduce(&FP2aux2);
-            FP2_YYY_norm(&FP2aux2);
             if(!FP2_YYY_equals(&FP2aux1,&FP2add) || !FP2_YYY_equals(&FP2aux2,&FP2add))
             {
+                printf("FP2: ");
+                FP2_YYY_output(&FP2aux1);
+                printf("FP2: ");
+                FP2_YYY_output(&FP2aux2);
+                printf("\nExp: ");
+                FP2_YYY_output(&FP2add);
                 printf("ERROR adding two FP2, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
@@ -239,10 +253,6 @@ int main(int argc, char** argv)
             FP2_YYY_add(&FP2aux1,&FP2aux1,&FP2aux4);
             FP2_YYY_add(&FP2aux2,&FP2aux2,&FP2aux4);
             FP2_YYY_add(&FP2aux2,&FP2aux2,&FP2aux3);
-            FP2_YYY_reduce(&FP2aux1);
-            FP2_YYY_reduce(&FP2aux2);
-            FP2_YYY_norm(&FP2aux1);
-            FP2_YYY_norm(&FP2aux2);
             if(!FP2_YYY_equals(&FP2aux1,&FP2aux2))
             {
                 printf("ERROR testing associativity between three FP2s, line %d\n",i);
@@ -261,6 +271,10 @@ int main(int argc, char** argv)
             FP2_YYY_norm(&FP2aux1);
             if(!FP2_YYY_equals(&FP2aux1,&FP2neg))
             {
+                printf("FP2: ");
+                FP2_YYY_output(&FP2aux1);
+                printf("\nExp: ");
+                FP2_YYY_output(&FP2neg);
                 printf("ERROR in computing negative of FP2, line %d\n",i);
                 exit(EXIT_FAILURE);
             }
@@ -274,8 +288,6 @@ int main(int argc, char** argv)
             FP2_YYY_copy(&FP2aux1,&FP2_1);
             FP2_YYY_copy(&FP2aux2,&FP2_2);
             FP2_YYY_sub(&FP2aux1,&FP2aux1,&FP2aux2);
-            FP2_YYY_reduce(&FP2aux1);
-            FP2_YYY_norm(&FP2aux1);
             if(FP2_YYY_equals(&FP2aux1,&FP2sub) == 0)
             {
                 printf("ERROR subtraction between two FP2, line %d\n",i);
@@ -290,8 +302,6 @@ int main(int argc, char** argv)
             read_FP2_YYY(&FP2conj,linePtr);
             FP2_YYY_copy(&FP2aux1,&FP2_1);
             FP2_YYY_conj(&FP2aux1,&FP2aux1);
-            FP2_YYY_reduce(&FP2aux1);
-            FP2_YYY_norm(&FP2aux1);
             if(!FP2_YYY_equals(&FP2aux1,&FP2conj))
             {
                 printf("ERROR computing conjugate of FP2, line %d\n",i);
@@ -313,7 +323,6 @@ int main(int argc, char** argv)
             read_FP2_YYY(&FP2pmul,linePtr);
             FP_YYY_nres(&FPaux1,BIGsc);
             FP2_YYY_pmul(&FP2aux1,&FP2_1,&FPaux1);
-            FP2_YYY_reduce(&FP2aux1);
             if(!FP2_YYY_equals(&FP2aux1,&FP2pmul))
             {
                 printf("ERROR in multiplication by BIG, line %d\n",i);
@@ -327,7 +336,6 @@ int main(int argc, char** argv)
             linePtr = line + len;
             read_FP2_YYY(&FP2pow,linePtr);
             FP2_YYY_pow(&FP2aux1,&FP2_1,BIGsc);
-            FP2_YYY_reduce(&FP2aux1);
             if(!FP2_YYY_equals(&FP2aux1,&FP2pow))
             {
                 printf("ERROR in raising FP_YYY by power BIG, line %d\n",i);
@@ -342,8 +350,6 @@ int main(int argc, char** argv)
             read_FP2_YYY(&FP2imul,linePtr);
             FP2_YYY_imul(&FP2aux1,&FP2_1,j);
             j++;
-            FP2_YYY_reduce(&FP2aux1);
-            FP2_YYY_norm(&FP2aux1);
             if(!FP2_YYY_equals(&FP2aux1,&FP2imul))
             {
                 printf("ERROR in multiplication by small integer, line %d\n",i);
@@ -358,8 +364,6 @@ int main(int argc, char** argv)
             read_FP2_YYY(&FP2sqr,linePtr);
             FP2_YYY_copy(&FP2aux1,&FP2_1);
             FP2_YYY_sqr(&FP2aux1,&FP2aux1);
-            FP2_YYY_reduce(&FP2aux1);
-            FP2_YYY_norm(&FP2aux1);
             if(!FP2_YYY_equals(&FP2aux1,&FP2sqr))
             {
                 printf("ERROR in squaring FP2, line %d\n",i);
@@ -380,8 +384,6 @@ int main(int argc, char** argv)
             linePtr = line + len;
             read_FP2_YYY(&FP2mul,linePtr);
             FP2_YYY_mul(&FP2aux1,&FP2_1,&FP2_2);
-            FP2_YYY_reduce(&FP2aux1);
-            FP2_YYY_norm(&FP2aux1);
             if(!FP2_YYY_equals(&FP2aux1,&FP2mul))
             {
                 printf("ERROR in multiplication between two FP2s, line %d\n",i);

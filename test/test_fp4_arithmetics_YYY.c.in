@@ -542,7 +542,7 @@ int main(int argc, char** argv)
             FP4_YYY_norm(&FP4aux1);
             if(!FP4_YYY_equals(&FP4aux1,&FP4_xtrpow2))
             {
-                printf("ERROR computing FP4 trace of an FP12 raised to the power of a BIG number, line %d\n",i);
+                printf("ERROR computing FP4 trace of an FP12 raised to the power of a BIG number (Double), line %d\n",i);
                 exit(EXIT_FAILURE);
             }
         }
