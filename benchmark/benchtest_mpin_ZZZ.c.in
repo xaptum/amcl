@@ -68,7 +68,7 @@ int mpin(csprng *RNG)
     int iterations;
     clock_t start;
     double elapsed;
-    
+
     /* Trusted Authority set-up */
     MPIN_ZZZ_RANDOM_GENERATE(RNG,&S);
     printf("Master Secret= ");
@@ -126,8 +126,8 @@ int mpin(csprng *RNG)
     iterations=0;
     start=clock();
     do
-    {        
-      MPIN_ZZZ_CLIENT(HASH_TYPE_MPIN_ZZZ,date,&CLIENT_ID,RNG,&X,pin,&TOKEN,&SEC,pxID,pxCID,pPERMIT,NULL,timeValue,&Y);
+    {
+        MPIN_ZZZ_CLIENT(HASH_TYPE_MPIN_ZZZ,date,&CLIENT_ID,RNG,&X,pin,&TOKEN,&SEC,pxID,pxCID,pPERMIT,NULL,timeValue,&Y);
 
         iterations++;
         elapsed=(clock()-start)/(double)CLOCKS_PER_SEC;
@@ -143,7 +143,7 @@ int mpin(csprng *RNG)
     iterations=0;
     start=clock();
     do
-    {    
+    {
         rtn = MPIN_ZZZ_SERVER(HASH_TYPE_MPIN_ZZZ,date,pHID,pHTID,&Y,&SST,pxID,pxCID,&SEC,pE,pF,&CLIENT_ID,NULL,timeValue,NULL);
 
         iterations++;
@@ -153,7 +153,7 @@ int mpin(csprng *RNG)
     elapsed=1000.0*elapsed/iterations;
     printf("MPIN Server              - %8d iterations  ",iterations);
     printf(" %8.2lf ms per iteration\n",elapsed);
-    
+
     HASH_ID(HASH_TYPE_MPIN_ZZZ,&CLIENT_ID,&HSID);  // new
     MPIN_ZZZ_GET_G1_MULTIPLE(RNG,0,&W,prHID,&T);  /* Also send T=w.ID to client, remember random w  */
 

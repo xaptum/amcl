@@ -104,11 +104,11 @@ int main()
     /* initialise random number generator */
     CREATE_CSPRNG(&RNG,&SEED);
 
-#ifdef DEBUG    
+#ifdef DEBUG
     printf("SEED: 0x");
     OCT_output(&SEED);
 #endif
-    
+
     /* TA: Generate master secret  */
     rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS);
     if (rtn != 0)

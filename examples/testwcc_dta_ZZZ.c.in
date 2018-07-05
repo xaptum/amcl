@@ -20,7 +20,7 @@ under the License.
 
 /* Demonstrate WCC with two TAs */
 
-/* Build executible after installation:
+/* Build executable after installation:
    gcc -std=c99 -g testwcc_dta_ZZZ.c  -I/opt/amcl/include -L/opt/amcl/lib -lamcl_wcc_ZZZ -lamcl_pairing_ZZZ -lamcl_curve_ZZZ -lamcl_core_ZZZ -o testwcc_dta_ZZZ */
 
 #include <stdio.h>
@@ -92,7 +92,7 @@ int main()
     char t2[PTAG];  // Tag
     char k1[WCC_PAS];  // AES Key
     char k2[WCC_PAS];  // AES Key
-    char iv[PIV]; // IV - Initialisation vector
+    char iv[PIV]; // IV - Initialization vector
     char c[100];  // Ciphertext
     char p[100];  // Recovered Plaintext
     octet T1= {sizeof(t1),sizeof(t1),t1};
@@ -106,14 +106,14 @@ int main()
     OCT_jstring(&MESSAGE1,"Hello Bob");
     OCT_jstring(&MESSAGE2,"Hello Alice");
 
-    /* unrandom seed value! */
+    /* non random seed value */
     SEED.len=32;
     for (i=0; i<32; i++) SEED.val[i]=i+1;
 
-    /* initialise random number generator */
+    /* initialize random number generator */
     CREATE_CSPRNG(&RNG,&SEED);
 
-    /* Generate Client master secret for MIRACL and Customer */
+    /* Generate Client master secret */
     rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS1);
     if (rtn != 0)
     {
@@ -126,9 +126,9 @@ int main()
         printf("TA WCC_ZZZ_RANDOM_GENERATE Error %d\n", rtn);
         return 1;
     }
-    printf("TA MASTER SECRET MIRACL: ");
+    printf("TA1 MASTER SECRET: ");
     OCT_output(&MS1);
-    printf("TA MASTER SECRET CUSTOMER: ");
+    printf("TA2 MASTER SECRET: ");
     OCT_output(&MS2);
 
     // Alice's ID

@@ -122,7 +122,7 @@ int main()
     OCT_output(&SEED);
 #endif
 
-    /* initialise random number generator */
+    /* initialize random number generator */
     CREATE_CSPRNG(&RNG,&SEED);
 
     /* Generate master secret */
@@ -189,16 +189,16 @@ int main()
     printf("\n");
 #endif
 
-        // TA: Generate Eve's sender key
-        rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdE,&EKeyG1);
-        if (rtn != 0)
-        {
-            printf("TA WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdE,&EKeyG1) Error %d\n", rtn);
-            return 1;
-        }
+    // TA: Generate Eve's sender key
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdE,&EKeyG1);
+    if (rtn != 0)
+    {
+        printf("TA WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdE,&EKeyG1) Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("TA Eve's sender key: ");
-        OCT_output(&EKeyG1);
+    printf("TA Eve's sender key: ");
+    OCT_output(&EKeyG1);
 #endif
 
     /* TEST RUN: Check that the protocol is working when using the right receiver key */

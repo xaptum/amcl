@@ -20,7 +20,7 @@ under the License.
 
 /* Demonstrate WCC with one TA */
 
-/* Build executible after installation:
+/* Build executable after installation:
    gcc -std=c99 -g testwcc_ZZZ.c -I/opt/amcl/include -L/opt/amcl/lib -lamcl_wcc_ZZZ -lamcl_pairing_ZZZ -lamcl_curve_ZZZ -lamcl_core_ZZZ -o testwcc_ZZZ */
 
 #include <stdio.h>
@@ -84,7 +84,7 @@ int main()
     char t2[PTAG]; // Tag
     char k1[WCC_PAS];  // AES Key
     char k2[WCC_PAS];  // AES Key
-    char iv[PIV];  // IV - Initialisation vector
+    char iv[PIV];  // IV - Initialization vector
     char c[100];   // Ciphertext
     char p[100];   // Recovered Plaintext
     octet T1= {sizeof(t1),sizeof(t1),t1};

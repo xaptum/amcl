@@ -97,7 +97,7 @@ int main()
     SEED.len=32;
     for (i=0; i<32; i++) SEED.val[i]=i+1;
 
-    /* initialise random number generator */
+    /* initialize random number generator */
     CREATE_CSPRNG(&RNG,&SEED);
 
     /* TEST RUN: execute a test run with valid points to make sure
@@ -107,7 +107,7 @@ int main()
     /* TA: Generate master secret  */
     WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS);
 
-    // TA: Generate Alices's sender key
+    // TA: Generate Alice's sender key
     OCT_jstring(&IdA,"alice@miracl.com");
     WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdA,&AKeyG1);
 

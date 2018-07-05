@@ -70,7 +70,7 @@ int main()
     octet EKeyG2= {0,sizeof(ekeyG2), ekeyG2};
 
     // Parties identities
-    char alice_id[256],bob_id[256],eve_id[256];    
+    char alice_id[256],bob_id[256],eve_id[256];
     octet IdA= {0,sizeof(alice_id),alice_id};
     octet IdB= {0,sizeof(bob_id),bob_id};
     octet IdE= {0,sizeof(eve_id),eve_id};
@@ -122,7 +122,7 @@ int main()
     OCT_output(&SEED);
 #endif
 
-    /* initialise random number generator */
+    /* initialize random number generator */
     CREATE_CSPRNG(&RNG,&SEED);
 
     /* Generate master secret */

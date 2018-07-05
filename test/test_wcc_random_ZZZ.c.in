@@ -106,7 +106,7 @@ int main()
     char t2[PTAG];  // Tag
     char k1[WCC_PAS];  // AES Key
     char k2[WCC_PAS];  // AES Key
-    char iv[PIV]; // IV - Initialisation vector
+    char iv[PIV]; // IV - Initialization vector
     char c[100];  // Ciphertext
     char p[100];  // Recovered Plaintext
     octet T1= {sizeof(t1),sizeof(t1),t1};
