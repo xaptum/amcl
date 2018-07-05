@@ -114,7 +114,7 @@ int main()
     // non random seed value
     char seed[32] = {0};
     octet SEED = {sizeof(seed),sizeof(seed),seed};
-    for (i=0; i<100; i++) SEED.val[i]=i+1;
+    for (i=0; i<32; i++) SEED.val[i]=i+1;
     csprng RNG;
 
 #ifdef DEBUG
