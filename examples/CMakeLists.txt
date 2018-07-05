@@ -40,10 +40,6 @@ foreach(curve ${AMCL_CURVE})
     add_executable(testwcc_${TC} ${testwcc_${TC}_GEN_SRCS})
     target_link_libraries(testwcc_${TC} PRIVATE amcl_wcc_${TC})
 
-    amcl_configure_file_curve(testwcc_tp_ZZZ.c.in testwcc_tp_${TC}.c "${curve}" testwcc_tp_${TC}_GEN_SRCS)
-    add_executable(testwcc_tp_${TC} ${testwcc_tp_${TC}_GEN_SRCS})
-    target_link_libraries(testwcc_tp_${TC} PRIVATE amcl_wcc_${TC})
-
     amcl_configure_file_curve(testwcc_dta_ZZZ.c.in testwcc_dta_${TC}.c "${curve}" testwcc_dta_${TC}_GEN_SRCS)
     add_executable(testwcc_dta_${TC} ${testwcc_dta_${TC}_GEN_SRCS})
     target_link_libraries(testwcc_dta_${TC} PRIVATE amcl_wcc_${TC})

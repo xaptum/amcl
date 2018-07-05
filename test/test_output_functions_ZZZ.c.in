@@ -473,15 +473,15 @@ int main(int argc, char** argv)
             done = 1;
         }
         if (!strncmp(line, BIGrawline, strlen(BIGrawline))||
-            !strncmp(line, FPrawline, strlen(FPrawline))||
-            !strncmp(line, ECPxyzline, strlen(ECPxyzline))||
-            !strncmp(line, ECPinfline, strlen(ECPinfline))||
-            !strncmp(line, ECPinfxyzline, strlen(ECPinfxyzline))||
-            !strncmp(line, FP2rawline, strlen(FP2rawline))||
-            !strncmp(line, FP4rawline, strlen(FP4rawline))||
-            !strncmp(line, ECP2xyzline, strlen(ECP2xyzline))||
-            !strncmp(line, ECP2infline, strlen(ECP2infline))||
-            !strncmp(line, ECP2infxyzline, strlen(ECP2infxyzline)))
+                !strncmp(line, FPrawline, strlen(FPrawline))||
+                !strncmp(line, ECPxyzline, strlen(ECPxyzline))||
+                !strncmp(line, ECPinfline, strlen(ECPinfline))||
+                !strncmp(line, ECPinfxyzline, strlen(ECPinfxyzline))||
+                !strncmp(line, FP2rawline, strlen(FP2rawline))||
+                !strncmp(line, FP4rawline, strlen(FP4rawline))||
+                !strncmp(line, ECP2xyzline, strlen(ECP2xyzline))||
+                !strncmp(line, ECP2infline, strlen(ECP2infline))||
+                !strncmp(line, ECP2infxyzline, strlen(ECP2infxyzline)))
             done=1;
         if(!done)
             printf("%s",line);

@@ -18,10 +18,10 @@ under the License.
 */
 
 
-/* Demonstrate WCC with two TAs and time permits */
+/* Demonstrate WCC with two TAs */
 
 /* Build executible after installation:
-   gcc -std=c99 -g testwcc_dta.c  -I/opt/amcl/include -L/opt/amcl/lib -lamcl_wcc -lamcl_pairing -lamcl_curve -lamcl_core -o testwcc_dta */
+   gcc -std=c99 -g testwcc_dta_ZZZ.c  -I/opt/amcl/include -L/opt/amcl/lib -lamcl_wcc_ZZZ -lamcl_pairing_ZZZ -lamcl_curve_ZZZ -lamcl_core_ZZZ -o testwcc_dta_ZZZ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,13 +48,6 @@ int main()
     char akeyG1[2*WCC_PFS_ZZZ+1];
     octet AKeyG1= {0,sizeof(akeyG1), akeyG1};
 
-    // Sender time permits
-    char a1TPG1[2*WCC_PFS_ZZZ+1], a2TPG1[2*WCC_PFS_ZZZ+1];
-    octet A1TPG1= {sizeof(a1TPG1),sizeof(a1TPG1), a1TPG1};
-    octet A2TPG1= {sizeof(a2TPG1),sizeof(a2TPG1), a2TPG1};
-    char aTPG1[2*WCC_PFS_ZZZ+1];
-    octet ATPG1= {0,sizeof(aTPG1), aTPG1};
-
     // Receiver keys
     char b1keyG2[4*WCC_PFS_ZZZ], b2keyG2[4*WCC_PFS_ZZZ];
     octet B1KeyG2= {0,sizeof(b1keyG2), b1keyG2};
@@ -62,17 +55,7 @@ int main()
     char bkeyG2[4*WCC_PFS_ZZZ];
     octet BKeyG2= {0,sizeof(bkeyG2), bkeyG2};
 
-    // Receiver time permits
-    char b1TPG2[4*WCC_PFS_ZZZ], b2TPG2[4*WCC_PFS_ZZZ];
-    octet B1TPG2= {sizeof(b1TPG2),sizeof(b1TPG2), b1TPG2};
-    octet B2TPG2= {sizeof(b2TPG2),sizeof(b2TPG2), b2TPG2};
-    char bTPG2[4*WCC_PFS_ZZZ];
-    octet BTPG2= {0,sizeof(bTPG2), bTPG2};
-
-    char ahv[WCC_PFS_ZZZ],alice_id[256],bhv[WCC_PFS_ZZZ],bob_id[256];
-    octet AHV= {0,sizeof(ahv),ahv};
-    octet BHV= {0,sizeof(bhv),bhv};
-
+    char alice_id[256],bob_id[256];
     octet IdA= {0,sizeof(alice_id),alice_id};
     octet IdB= {0,sizeof(bob_id),bob_id};
 
@@ -120,12 +103,6 @@ int main()
     octet C= {0,sizeof(c),c};
     octet P= {0,sizeof(p),p};
 
-    int date;
-    date = today();
-    printf("Date %d \n", date);
-
-    int hashDoneOn = 1;
-
     OCT_jstring(&MESSAGE1,"Hello Bob");
     OCT_jstring(&MESSAGE2,"Hello Alice");
 
@@ -140,13 +117,13 @@ int main()
     rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS1);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS1) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_RANDOM_GENERATE Error %d\n", rtn);
         return 1;
     }
     rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS2);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS2) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_RANDOM_GENERATE Error %d\n", rtn);
         return 1;
     }
     printf("TA MASTER SECRET MIRACL: ");
@@ -158,17 +135,16 @@ int main()
     OCT_jstring(&IdA,"alice@miracl.com");
 
     // TA: Generate Alice's sender key
-    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdA,&AHV);
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS1,&AHV,&A1KeyG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS1,&IdA,&A1KeyG1);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_GET_G1_MULTIPLE(hashDoneOn,&MS1,&AHV,&A1KeyG1) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_GET_G1_MULTIPLE Error %d\n", rtn);
         return 1;
     }
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS2,&AHV,&A2KeyG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS2,&IdA,&A2KeyG1);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_GET_G1_MULTIPLE(hashDoneOn,&MS2,&AHV,&A2KeyG1) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_GET_G1_MULTIPLE Error %d\n", rtn);
         return 1;
     }
     printf("TA A1KeyG1: ");
@@ -179,54 +155,26 @@ int main()
     rtn = WCC_ZZZ_RECOMBINE_G1(&A1KeyG1, &A2KeyG1, &AKeyG1);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_RECOMBINE_G1(&A1KeyG1, &A2KeyG1, &AKeyG1) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_RECOMBINE_G1 Error %d\n", rtn);
         return 1;
     }
     printf("TA Alice's sender key: ");
     OCT_output(&AKeyG1);
 
-    // TA: Generate Alice's G1 time permit
-    rtn = WCC_ZZZ_GET_G1_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS1,&AHV,&A1TPG1);
-    if (rtn != 0)
-    {
-        printf("TA WCC_ZZZ_GET_G1_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS1,&AHV,&A1TPG1) Error %d\n", rtn);
-        return 1;
-    }
-    rtn = WCC_ZZZ_GET_G1_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS2,&AHV,&A2TPG1);
-    if (rtn != 0)
-    {
-        printf("TA WCC_ZZZ_GET_G1_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS2,&AHV,&A2TPG1) Error %d\n", rtn);
-        return 1;
-    }
-    printf("TA A1TPG1: ");
-    OCT_output(&A1TPG1);
-    printf("TA A2TPG1: ");
-    OCT_output(&A2TPG1);
-
-    rtn = WCC_ZZZ_RECOMBINE_G1(&A1TPG1, &A2TPG1, &ATPG1);
-    if (rtn != 0)
-    {
-        printf("Alice WCC_ZZZ_RECOMBINE_G1(&A1TPG1, &A2TPG1, &ATPG1) Error %d\n", rtn);
-        return 1;
-    }
-    printf("TA Alice's sender time permit: ");
-    OCT_output(&ATPG1);
-
     // Bob's ID
     OCT_jstring(&IdB,"bob@miracl.com");
 
     // TA: Generate Bob's receiver key
-    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdB,&BHV);
-    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS1,&BHV,&B1KeyG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS1,&IdB,&B1KeyG2);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS1,&BHV,&B1KeyG2) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_GET_G2_MULTIPLE Error %d\n", rtn);
         return 1;
     }
-    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS2,&BHV,&B2KeyG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS2,&IdB,&B2KeyG2);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS2,&BHV,&B2KeyG2) Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_GET_G2_MULTIPLE Error %d\n", rtn);
         return 1;
     }
     printf("TA B1KeyG2: ");
@@ -237,46 +185,18 @@ int main()
     rtn = WCC_ZZZ_RECOMBINE_G2(&B1KeyG2, &B2KeyG2, &BKeyG2);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_RECOMBINE_G2(&B1KeyG1, &B2KeyG1, &BKeyG2) Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_RECOMBINE_G2 Error %d\n", rtn);
         return 1;
     }
     printf("TA Bob's receiver key: ");
     OCT_output(&BKeyG2);
-
-    // TA: Generate Bob's receiver time permit
-    rtn = WCC_ZZZ_GET_G2_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS1,&BHV,&B1TPG2);
-    if (rtn != 0)
-    {
-        printf("TA WCC_ZZZ_GET_G2_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS1,&BHV,&B1TPG2) Error %d\n", rtn);
-        return 1;
-    }
-    rtn = WCC_ZZZ_GET_G2_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS2,&BHV,&B2TPG2);
-    if (rtn != 0)
-    {
-        printf("TA WCC_ZZZ_GET_G2_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS2,&BHV,&B2TPG2) Error %d\n", rtn);
-        return 1;
-    }
-    printf("TA B1TPG2: ");
-    OCT_output(&B1TPG2);
-    printf("TA B2TPG2: ");
-    OCT_output(&B2TPG2);
-
-    rtn = WCC_ZZZ_RECOMBINE_G2(&B1TPG2, &B2TPG2, &BTPG2);
-    if (rtn != 0)
-    {
-        printf("Bob WCC_ZZZ_RECOMBINE_G2(&B1TPG2, &B2TPG2, &BTPG2) Error %d\n", rtn);
-        return 1;
-    }
-    printf("TA Bob's receiver time permit: ");
-    OCT_output(&BTPG2);
-    printf("\n");
 
     printf("Alice\n");
 
     rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&X);
     if (rtn != 0)
     {
-        printf("Alice WCC_ZZZ_RANDOM_GENERATE(&RNG,&X) Error %d\n", rtn);
+        printf("Alice WCC_ZZZ_RANDOM_GENERATE Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -285,10 +205,10 @@ int main()
     printf("\n");
 #endif
 
-    rtn = WCC_ZZZ_GET_G1_TPMULT(HASH_TYPE_WCC_ZZZ,date,&X,&IdA,&PaG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1);
     if (rtn != 0)
     {
-        printf("Alice WCC_ZZZ_GET_G1_TPMULT(HASH_TYPE_WCC_ZZZ,date,&X,&IdA,&PaG1) Error %d\n", rtn);
+        printf("Alice WCC_ZZZ_GET_G1_MULTIPLE Error %d\n", rtn);
         return 1;
     }
 
@@ -305,7 +225,7 @@ int main()
     rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&W);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&W) Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_RANDOM_GENERATE Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -313,10 +233,10 @@ int main()
     OCT_output(&W);
     printf("\n");
 #endif
-    rtn = WCC_ZZZ_GET_G1_TPMULT(HASH_TYPE_WCC_ZZZ,date,&W,&IdA,&PgG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_GET_G1_TPMULT(HASH_TYPE_WCC_ZZZ,date,&W,&IdA,&PgG1) Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_GET_G1_MULTIPLE Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -328,7 +248,7 @@ int main()
     rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y) Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_RANDOM_GENERATE Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -336,10 +256,10 @@ int main()
     OCT_output(&Y);
     printf("\n");
 #endif
-    rtn = WCC_ZZZ_GET_G2_TPMULT(HASH_TYPE_WCC_ZZZ,date,&Y,&IdB,&PbG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_GET_G1_TPMULT(date,&Y,&IdB,&PbG2) Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_GET_G1_MULTIPLE Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -364,10 +284,10 @@ int main()
 #endif
 
     // Bob calculates AES Key
-    WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ, date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, &BTPG2, &IdA, &K2);
+    WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,&Y,&W,&PIA,&PIB,&PaG1,&PgG1,&BKeyG2,&IdA,&K2);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_RECEIVER_KEY() Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_RECEIVER_KEY Error %d\n", rtn);
         return 1;
     }
     printf("Bob AES Key: ");
@@ -402,10 +322,10 @@ int main()
 #endif
 
     // Alice calculates AES Key
-    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ, date, &X, &PIA, &PIB, &PbG2, &PgG1, &AKeyG1, &ATPG1, &IdB, &K1);
+    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,&X,&PIA,&PIB,&PbG2,&PgG1,&AKeyG1,&IdB,&K1);
     if (rtn != 0)
     {
-        printf("Alice WCC_ZZZ_SENDER_KEY() Error %d\n", rtn);
+        printf("Alice WCC_ZZZ_SENDER_KEY Error %d\n", rtn);
         return 1;
     }
     printf("Alice AES Key: ");
@@ -422,7 +342,7 @@ int main()
     OCT_output_string(&MESSAGE1);
     printf("\n");
 
-    AES_GCM_ENCRYPT(&K1, &IV, &IdA, &MESSAGE1, &C, &T1);
+    AES_GCM_ENCRYPT(&K1,&IV,&IdA,&MESSAGE1,&C,&T1);
 
     printf("Alice: Ciphertext: ");
     OCT_output(&C);
@@ -431,7 +351,7 @@ int main()
     OCT_output(&T1);
     printf("\n");
 
-    AES_GCM_DECRYPT(&K2, &IV, &IdA, &C, &P, &T2);
+    AES_GCM_DECRYPT(&K2,&IV,&IdA,&C,&P,&T2);
 
     printf("Bob: Decrypted message received from Alice: ");
     OCT_output_string(&P);
@@ -462,8 +382,6 @@ int main()
     OCT_clear(&B1KeyG2);
     OCT_clear(&B2KeyG2);
     OCT_clear(&BKeyG2);
-    OCT_clear(&AHV);
-    OCT_clear(&BHV);
     OCT_clear(&IdA);
     OCT_clear(&IdB);
     OCT_clear(&X);

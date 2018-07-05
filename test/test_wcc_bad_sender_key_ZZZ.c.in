@@ -23,7 +23,7 @@
  * under the License.
  */
 
-/* Test WCC using the wrong sender key, i.e. a key generated from a different identity */
+/* Smoke test: Test WCC using the wrong sender key, i.e. a key generated from a different identity */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +31,6 @@
 #include <time.h>
 #include "randapi.h"
 #include "wcc_ZZZ.h"
-#include "config_test.h"
 
 // #define DEBUG
 
@@ -42,7 +41,7 @@ void rand_str(octet* dest, csprng *RNG)
                      "abcdefghijklmnopqrstuvwxyz"
                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    for(;dest->len < dest->max;dest->len++)
+    for(; dest->len < dest->max; dest->len++)
     {
         BIG_XXX_random(r,RNG);
         size_t index = r[0] % (sizeof charset -1);
@@ -52,7 +51,7 @@ void rand_str(octet* dest, csprng *RNG)
 
 int main()
 {
-    int i,rtn,iter;
+    int i,rtn;
 
     // Master secret
     char ms[WCC_PGS_ZZZ];
@@ -62,20 +61,16 @@ int main()
     char akeyG1[2*WCC_PFS_ZZZ+1];
     octet AKeyG1= {0,sizeof(akeyG1), akeyG1};
 
+    // Eve Sender key
+    char ekeyG1[2*WCC_PFS_ZZZ+1];
+    octet EKeyG1= {0,sizeof(ekeyG1), ekeyG1};
+
     // Bob Receiver key
     char bkeyG2[4*WCC_PFS_ZZZ];
     octet BKeyG2= {0,sizeof(bkeyG2), bkeyG2};
 
-    // Eve Receiver key
-    char ekeyG1[2*WCC_PFS_ZZZ+1];
-    octet EKeyG1= {0,sizeof(ekeyG1), ekeyG1};
-
     // Parties identities
-    char ahv[WCC_PFS_ZZZ],alice_id[256],bhv[WCC_PFS_ZZZ],bob_id[256],ehv[WCC_PFS_ZZZ],eve_id[256];
-    octet AHV= {0,sizeof(ahv),ahv};
-    octet BHV= {0,sizeof(bhv),bhv};
-    octet EHV= {0,sizeof(ehv),ehv};
-
+    char alice_id[256],bob_id[256],eve_id[256];
     octet IdA= {0,sizeof(alice_id),alice_id};
     octet IdB= {0,sizeof(bob_id),bob_id};
     octet IdE= {0,sizeof(eve_id),eve_id};
@@ -107,40 +102,21 @@ int main()
     octet K1= {0,sizeof(k1),k1};
     octet K2= {0,sizeof(k2),k2};
 
+
     // Zero octet
     char zero[WCC_PAS];
     octet ZERO= {0,sizeof(zero),zero};
-    for(i=0;i<WCC_PAS;i++){
+    for(i=0; i<WCC_PAS; i++)
+    {
         ZERO.val[i]=0;
     }
 
-    int date;
-    date = 0;
-    printf("Date %d \n", date);
-
-    int hashDoneOn = 1;
-    int hashDoneOff = 0;
-
-    int byte_count = 32;
+    // non random seed value
     char seed[32] = {0};
     octet SEED = {sizeof(seed),sizeof(seed),seed};
+    for (i=0; i<100; i++) SEED.val[i]=i+1;
     csprng RNG;
 
-#ifdef __linux__
-    FILE *fp;
-    fp = fopen("/dev/urandom", "r");
-    if (fread(&seed, 1, byte_count, fp)) {};
-    fclose(fp);
-#else
-    /* non random seed value! */
-    unsigned long ran;
-    time((time_t *)&ran);
-    SEED.val[0]=ran;
-    SEED.val[1]=ran>>8;
-    SEED.val[2]=ran>>16;
-    SEED.val[3]=ran>>24;
-    for (i=4; i<byte_count; i++) SEED.val[i]=i+1;
-#endif
 #ifdef DEBUG
     printf("SEED 0x");
     OCT_output(&SEED);
@@ -149,448 +125,443 @@ int main()
     /* initialise random number generator */
     CREATE_CSPRNG(&RNG,&SEED);
 
-    for(iter=1; iter<nRandomTests+1; iter++)
+    /* Generate master secret */
+    rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS);
+    if (rtn != 0)
     {
-        /* Generate Client master secret for MIRACL and Customer */
-        rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS);
-        if (rtn != 0)
-        {
-            printf("TA WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS1) Error %d\n", rtn);
-            return 1;
-        }
+        printf("TA WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS) Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("TA MASTER SECRET: ");
-        OCT_output(&MS);
+    printf("TA MASTER SECRET: ");
+    OCT_output(&MS);
 #endif
 
 
-        /* Generate key material for Alice, Bob and Eve */
+    /* Generate key material for Alice, Bob and Eve */
 
-        // Alice's ID
-        rand_str(&IdA,&RNG);
+    // Alice's ID
+    rand_str(&IdA,&RNG);
 #ifdef DEBUG
-        printf("ALICE ID:");
-        OCT_output_string(&IdA);
-        printf("\n");
+    printf("ALICE ID:");
+    OCT_output_string(&IdA);
+    printf("\n");
 #endif
 
-        // TA: Generate Alice's sender key
-        HASH_ID(HASH_TYPE_WCC_ZZZ,&IdA,&AHV);
-        rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS,&AHV,&AKeyG1);
-        if (rtn != 0)
-        {
-            printf("TA WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS,&AHV,&AKeyG1) Error %d\n", rtn);
-            return 1;
-        }
+    // TA: Generate Alice's sender key
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdA,&AKeyG1);
+    if (rtn != 0)
+    {
+        printf("TA WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdA,&AKeyG1) Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("TA Alice's sender key: ");
-        OCT_output(&AKeyG1);
+    printf("TA Alice's sender key: ");
+    OCT_output(&AKeyG1);
 #endif
 
-        // Bob's ID
-        rand_str(&IdB,&RNG);
+    // Bob's ID
+    rand_str(&IdB,&RNG);
 #ifdef DEBUG
-        printf("BOB ID:");
-        OCT_output_string(&IdB);
-        printf("\n");
+    printf("BOB ID:");
+    OCT_output_string(&IdB);
+    printf("\n");
 #endif
 
-        // TA: Generate Bob's receiver key
-        HASH_ID(HASH_TYPE_WCC_ZZZ,&IdB,&BHV);
-        rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS,&BHV,&BKeyG2);
-        if (rtn != 0)
-        {
-            printf("TA WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS,&BHV,&BKeyG2) Error %d\n", rtn);
-            return 1;
-        }
+    // TA: Generate Bob's receiver key
+    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdB,&IdB);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdB,&BKeyG2);
+    if (rtn != 0)
+    {
+        printf("TA WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdB,&BKeyG2) Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("TA Bob's receiver key: ");
-        OCT_output(&BKeyG2);
+    printf("TA Bob's receiver key: ");
+    OCT_output(&BKeyG2);
 #endif
 
-        // Eve's ID
-        rand_str(&IdE,&RNG);
+    // Eve's ID
+    rand_str(&IdE,&RNG);
 #ifdef DEBUG
-        printf("EVE ID:");
-        OCT_output_string(&IdE);
-        printf("\n");
+    printf("EVE ID:");
+    OCT_output_string(&IdE);
+    printf("\n");
 #endif
 
         // TA: Generate Eve's sender key
-        HASH_ID(HASH_TYPE_WCC_ZZZ,&IdE,&EHV);
-        rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS,&EHV,&EKeyG1);
+        rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdE,&EKeyG1);
         if (rtn != 0)
         {
-            printf("TA WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOn,&MS,&EHV,&EKeyG1) Error %d\n", rtn);
+            printf("TA WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdE,&EKeyG1) Error %d\n", rtn);
             return 1;
         }
 #ifdef DEBUG
-        printf("TA Eve's receiver key: ");
+        printf("TA Eve's sender key: ");
         OCT_output(&EKeyG1);
 #endif
 
-
-        /* TEST RUN: Check that the protocol is working when using the right sender key */
+    /* TEST RUN: Check that the protocol is working when using the right receiver key */
 
 #ifdef DEBUG
-        printf("Control Run. Alice:\n");
+    printf("Control Run. Alice:\n");
 #endif
 
-        rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&X);
-        if (rtn != 0)
-        {
-            printf("Alice WCC_ZZZ_RANDOM_GENERATE(&RNG,&X) Error %d\n", rtn);
-            return 1;
-        }
+    rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&X);
+    if (rtn != 0)
+    {
+        printf("Alice WCC_ZZZ_RANDOM_GENERATE(&RNG,&X) Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("Alice X: ");
-        OCT_output(&X);
-        printf("\n");
+    printf("Alice X: ");
+    OCT_output(&X);
+    printf("\n");
 #endif
 
-        rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&X,&IdA,&PaG1);
-        if (rtn != 0)
-        {
-            printf("Alice WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&X,&IdA,&PaG1) Error %d\n", rtn);
-            return 1;
-        }
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1);
+    if (rtn != 0)
+    {
+        printf("Alice WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1) Error %d\n", rtn);
+        return 1;
+    }
 
 #ifdef DEBUG
-        printf("Alice sends IdA and PaG1 to Bob\n\n");
-        printf("Alice IdA: ");
-        OCT_output_string(&IdA);
-        printf("\n");
-        printf("Alice PaG1: ");
-        OCT_output(&PaG1);
-        printf("\n");
-#endif
-
-#ifdef DEBUG
-        printf("Bob\n");
-#endif
-
-        rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&W);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&W) Error %d\n", rtn);
-            return 1;
-        }
-#ifdef DEBUG
-        printf("Bob W: ");
-        OCT_output(&W);
-        printf("\n");
-#endif
-        rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&W,&IdA,&PgG1);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,date,&W,&IdA,&PgG1) Error %d\n", rtn);
-            return 1;
-        }
-#ifdef DEBUG
-        printf("PgG1: ");
-        OCT_output(&PgG1);
-        printf("\n");
-#endif
-
-        rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y) Error %d\n", rtn);
-            return 1;
-        }
-#ifdef DEBUG
-        printf("Bob Y: ");
-        OCT_output(&Y);
-        printf("\n");
-#endif
-        rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&Y,&IdB,&PbG2);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&Y,&IdB,&PbG2) Error %d\n", rtn);
-            return 1;
-        }
-
-#ifdef DEBUG
-        printf("Bob PbG2: ");
-        OCT_output(&PbG2);
-        printf("\n");
-#endif
-
-        // pia = Hq(PaG1,PbG2,PgG1,IdB)
-        WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
-
-        // pib = Hq(PbG2,PaG1,PgG1,IdA)
-        WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
-
-#ifdef DEBUG
-        printf("Bob PIA: ");
-        OCT_output(&PIA);
-        printf("\n");
-        printf("Bob PIB: ");
-        OCT_output(&PIB);
-        printf("\n");
-#endif
-
-        // Bob calculates AES Key
-        rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, NULL, &IdA, &K2);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_RECEIVER_KEY() Error %d\n", rtn);
-            return 1;
-        }
-#ifdef DEBUG
-        printf("Bob AES Key: ");
-        OCT_output(&K2);
-#endif
-        if (OCT_comp(&K2,&ZERO))
-        {
-            printf("Bob WCC_ZZZ_RECEIVER_KEY() Error: generated key is zero\n");
-            return 1;
-        }
-
-#ifdef DEBUG
-        printf("Bob sends IdB, PbG2 and PgG1 to Alice\n\n");
-        printf("Bob IdB: ");
-        OCT_output_string(&IdB);
-        printf("\n");
-        printf("Bob PbG2: ");
-        OCT_output(&PbG2);
-        printf("\n");
-        printf("Bob PgG1: ");
-        OCT_output(&PgG1);
-        printf("\n");
+    printf("Alice sends IdA and PaG1 to Bob\n\n");
+    printf("Alice IdA: ");
+    OCT_output_string(&IdA);
+    printf("\n");
+    printf("Alice PaG1: ");
+    OCT_output(&PaG1);
+    printf("\n");
 #endif
 
 #ifdef DEBUG
-        printf("Alice\n");
+    printf("Bob\n");
 #endif
 
-        // pia = Hq(PaG1,PbG2,PgG1,IdB)
-        WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
-
-        // pib = Hq(PbG2,PaG1,PgG1,IdA)
-        WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
-
+    rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&W);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&W) Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("Alice PIA: ");
-        OCT_output(&PIA);
-        printf("\n");
-        printf("Alice PIB: ");
-        OCT_output(&PIB);
-        printf("\n");
+    printf("Bob W: ");
+    OCT_output(&W);
+    printf("\n");
+#endif
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_GET_G1_MULTIPLE Error %d\n", rtn);
+        return 1;
+    }
+#ifdef DEBUG
+    printf("PgG1: ");
+    OCT_output(&PgG1);
+    printf("\n");
 #endif
 
-        // Alice calculates AES Key
-        rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,date, &X, &PIA, &PIB, &PbG2, &PgG1, &AKeyG1, NULL, &IdB, &K1);
-        if (rtn != 0)
-        {
-            printf("Alice WCC_ZZZ_SENDER_KEY() Error %d\n", rtn);
-            return 1;
-        }
+    rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y) Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("Alice AES Key: ");
-        OCT_output(&K1);
+    printf("Bob Y: ");
+    OCT_output(&Y);
+    printf("\n");
 #endif
-        if (OCT_comp(&K1,&ZERO))
-        {
-            printf("Alice WCC_ZZZ_SENDER_KEY() Error: generated key is zero\n");
-            return 1;
-        }
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2) Error %d\n", rtn);
+        return 1;
+    }
 
 #ifdef DEBUG
-        printf("K1: 0x");
-        OCT_output(&K1);
-        printf("K2: 0x");
-        OCT_output(&K2);
-#endif
-        if (!OCT_comp(&K1,&K2))
-        {
-            printf("FAILURE Control run keys do not match. OCT_comp(&K1,&K2)\n");
-            return 1;
-        }
-
-
-        /* BAD KEY RUN: Check that someone with the wrong sender key obtains a different session key */
-
-#ifdef DEBUG
-        printf("Bad key run. Eve:\n");
+    printf("Bob PbG2: ");
+    OCT_output(&PbG2);
+    printf("\n");
 #endif
 
-        rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&X);
-        if (rtn != 0)
-        {
-            printf("Eve WCC_ZZZ_RANDOM_GENERATE(&RNG,&X) Error %d\n", rtn);
-            return 1;
-        }
+    // pia = Hq(PaG1,PbG2,PgG1,IdB)
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
+
+    // pib = Hq(PbG2,PaG1,PgG1,IdA)
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
+
 #ifdef DEBUG
-        printf("Eve X: ");
-        OCT_output(&X);
-        printf("\n");
+    printf("Bob PIA: ");
+    OCT_output(&PIA);
+    printf("\n");
+    printf("Bob PIB: ");
+    OCT_output(&PIB);
+    printf("\n");
 #endif
 
-        rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&X,&IdE,&PaG1);
-        if (rtn != 0)
-        {
-            printf("Eve WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&X,&IdE,&PaG1) Error %d\n", rtn);
-            return 1;
-        }
-
+    // Bob calculates AES Key
+    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,&Y,&W,&PIA,&PIB,&PaG1,&PgG1,&BKeyG2,&IdA,&K2);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_RECEIVER_KEY() Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("Eve sends IdA and PaG1 to Bob\n\n");
-        printf("Eve IdA: ");
-        OCT_output_string(&IdA);
-        printf("\n");
-        printf("Eve PaG1: ");
-        OCT_output(&PaG1);
-        printf("\n");
+    printf("Bob AES Key: ");
+    OCT_output(&K2);
 #endif
+    if (OCT_comp(&K2,&ZERO))
+    {
+        printf("Bob WCC_ZZZ_RECEIVER_KEY() Error: generated key is zero\n");
+        return 1;
+    }
 
 #ifdef DEBUG
-        printf("Bob\n");
-#endif
-
-        rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&W);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&W) Error %d\n", rtn);
-            return 1;
-        }
-#ifdef DEBUG
-        printf("Bob W: ");
-        OCT_output(&W);
-        printf("\n");
-#endif
-        rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&W,&IdA,&PgG1);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,date,&W,&IdA,&PgG1) Error %d\n", rtn);
-            return 1;
-        }
-#ifdef DEBUG
-        printf("PgG1: ");
-        OCT_output(&PgG1);
-        printf("\n");
-#endif
-
-        rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y) Error %d\n", rtn);
-            return 1;
-        }
-#ifdef DEBUG
-        printf("Bob Y: ");
-        OCT_output(&Y);
-        printf("\n");
-#endif
-        rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&Y,&IdB,&PbG2);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,hashDoneOff,&Y,&IdB,&PbG2) Error %d\n", rtn);
-            return 1;
-        }
-
-#ifdef DEBUG
-        printf("Bob PbG2: ");
-        OCT_output(&PbG2);
-        printf("\n");
-#endif
-
-        // pia = Hq(PaG1,PbG2,PgG1,IdB)
-        WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
-
-        // pib = Hq(PbG2,PaG1,PgG1,IdA)
-        WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
-
-#ifdef DEBUG
-        printf("Bob PIA: ");
-        OCT_output(&PIA);
-        printf("\n");
-        printf("Bob PIB: ");
-        OCT_output(&PIB);
-        printf("\n");
-#endif
-
-        // Bob calculates AES Key
-        rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, NULL, &IdA, &K2);
-        if (rtn != 0)
-        {
-            printf("Bob WCC_ZZZ_RECEIVER_KEY() Error %d\n", rtn);
-            return 1;
-        }
-#ifdef DEBUG
-        printf("Bob AES Key: ");
-        OCT_output(&K2);
-#endif
-        if (OCT_comp(&K2,&ZERO))
-        {
-            printf("Bob WCC_ZZZ_RECEIVER_KEY() Error: generated key is zero\n");
-            return 1;
-        }
-
-#ifdef DEBUG
-        printf("Bob sends IdB, PbG2 and PgG1 to Alice\n\n");
-        printf("Bob IdB: ");
-        OCT_output_string(&IdB);
-        printf("\n");
-        printf("Bob PbG2: ");
-        OCT_output(&PbG2);
-        printf("\n");
-        printf("Bob PgG1: ");
-        OCT_output(&PgG1);
-        printf("\n");
+    printf("Bob sends IdB, PbG2 and PgG1 to Alice\n\n");
+    printf("Bob IdB: ");
+    OCT_output_string(&IdB);
+    printf("\n");
+    printf("Bob PbG2: ");
+    OCT_output(&PbG2);
+    printf("\n");
+    printf("Bob PgG1: ");
+    OCT_output(&PgG1);
+    printf("\n");
 #endif
 
 #ifdef DEBUG
-        printf("Eve\n");
+    printf("Alice\n");
 #endif
 
-        // pia = Hq(PaG1,PbG2,PgG1,IdB)
-        WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
+    // pia = Hq(PaG1,PbG2,PgG1,IdB)
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
 
-        // pib = Hq(PbG2,PaG1,PgG1,IdA)
-        WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
+    // pib = Hq(PbG2,PaG1,PgG1,IdA)
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
 
 #ifdef DEBUG
-        printf("Alice PIA: ");
-        OCT_output(&PIA);
-        printf("\n");
-        printf("Alice PIB: ");
-        OCT_output(&PIB);
-        printf("\n");
+    printf("Alice PIA: ");
+    OCT_output(&PIA);
+    printf("\n");
+    printf("Alice PIB: ");
+    OCT_output(&PIB);
+    printf("\n");
 #endif
 
-        // Eve calculates AES Key
-        rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,date, &X, &PIA, &PIB, &PbG2, &PgG1, &EKeyG1, NULL, &IdB, &K1);
-        if (rtn != 0)
-        {
-            printf("Eve WCC_ZZZ_SENDER_KEY() Error %d\n", rtn);
-            return 1;
-        }
+    // Alice calculates AES Key
+    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,&X,&PIA,&PIB,&PbG2,&PgG1,&AKeyG1,&IdB,&K1);
+    if (rtn != 0)
+    {
+        printf("Alice WCC_ZZZ_SENDER_KEY() Error %d\n", rtn);
+        return 1;
+    }
 #ifdef DEBUG
-        printf("Eve AES Key: ");
-        OCT_output(&K1);
+    printf("Alice AES Key: ");
+    OCT_output(&K1);
 #endif
-        if (OCT_comp(&K1,&ZERO))
-        {
-            printf("Eve WCC_ZZZ_SENDER_KEY() Error: generated key is zero\n");
-            return 1;
-        }
+    if (OCT_comp(&K1,&ZERO))
+    {
+        printf("Alice WCC_ZZZ_SENDER_KEY() Error: generated key is zero\n");
+        return 1;
+    }
 
 #ifdef DEBUG
-        printf("K1: 0x");
-        OCT_output(&K1);
-        printf("K2: 0x");
-        OCT_output(&K2);
+    printf("K1: 0x");
+    OCT_output(&K1);
+    printf("K2: 0x");
+    OCT_output(&K2);
 #endif
-        if (OCT_comp(&K1,&K2))
-        {
-            printf("FAILURE Bad key run keys match. OCT_comp(&K1,&K2)\n");
-            return 1;
-        }
+    if (!OCT_comp(&K1,&K2))
+    {
+        printf("FAILURE Control run keys do not match. OCT_comp(&K1,&K2)\n");
+        return 1;
+    }
+
+
+    /* BAD KEY RUN: Check that someone with the wrong sender key obtains a different session key */
+
+#ifdef DEBUG
+    printf("Bad key run. Eve:\n");
+#endif
+
+    rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&X);
+    if (rtn != 0)
+    {
+        printf("Eve WCC_ZZZ_RANDOM_GENERATE(&RNG,&X) Error %d\n", rtn);
+        return 1;
+    }
+#ifdef DEBUG
+    printf("Eve X: ");
+    OCT_output(&X);
+    printf("\n");
+#endif
+
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1);
+    if (rtn != 0)
+    {
+        printf("Eve WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1) Error %d\n", rtn);
+        return 1;
+    }
+
+#ifdef DEBUG
+    printf("Eve sends IdA and PaG1 to Bob\n\n");
+    printf("Eve IdA: ");
+    OCT_output_string(&IdA);
+    printf("\n");
+    printf("Eve PaG1: ");
+    OCT_output(&PaG1);
+    printf("\n");
+#endif
+
+#ifdef DEBUG
+    printf("Bob\n");
+#endif
+
+    rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&W);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&W) Error %d\n", rtn);
+        return 1;
+    }
+#ifdef DEBUG
+    printf("Bob W: ");
+    OCT_output(&W);
+    printf("\n");
+#endif
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1) Error %d\n", rtn);
+        return 1;
+    }
+#ifdef DEBUG
+    printf("PgG1: ");
+    OCT_output(&PgG1);
+    printf("\n");
+#endif
+
+    rtn = WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y) Error %d\n", rtn);
+        return 1;
+    }
+#ifdef DEBUG
+    printf("Bob Y: ");
+    OCT_output(&Y);
+    printf("\n");
+#endif
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2) Error %d\n", rtn);
+        return 1;
+    }
+
+#ifdef DEBUG
+    printf("Bob PbG2: ");
+    OCT_output(&PbG2);
+    printf("\n");
+#endif
+
+    // pia = Hq(PaG1,PbG2,PgG1,IdB)
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
+
+    // pib = Hq(PbG2,PaG1,PgG1,IdA)
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
+
+#ifdef DEBUG
+    printf("Bob PIA: ");
+    OCT_output(&PIA);
+    printf("\n");
+    printf("Bob PIB: ");
+    OCT_output(&PIB);
+    printf("\n");
+#endif
+
+    // Bob calculates AES Key
+    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,&Y,&W,&PIA,&PIB,&PaG1,&PgG1,&BKeyG2,&IdA,&K2);
+    if (rtn != 0)
+    {
+        printf("Bob WCC_ZZZ_RECEIVER_KEY() Error %d\n", rtn);
+        return 1;
+    }
+#ifdef DEBUG
+    printf("Bob AES Key: ");
+    OCT_output(&K2);
+#endif
+    if (OCT_comp(&K2,&ZERO))
+    {
+        printf("Bob WCC_ZZZ_RECEIVER_KEY() Error: generated key is zero\n");
+        return 1;
+    }
+
+#ifdef DEBUG
+    printf("Bob sends IdB, PbG2 and PgG1 to Alice\n\n");
+    printf("Bob IdB: ");
+    OCT_output_string(&IdB);
+    printf("\n");
+    printf("Bob PbG2: ");
+    OCT_output(&PbG2);
+    printf("\n");
+    printf("Bob PgG1: ");
+    OCT_output(&PgG1);
+    printf("\n");
+#endif
+
+#ifdef DEBUG
+    printf("Eve\n");
+#endif
+
+    // pia = Hq(PaG1,PbG2,PgG1,IdB)
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
+
+    // pib = Hq(PbG2,PaG1,PgG1,IdA)
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
+
+#ifdef DEBUG
+    printf("Eve PIA: ");
+    OCT_output(&PIA);
+    printf("\n");
+    printf("Eve PIB: ");
+    OCT_output(&PIB);
+    printf("\n");
+#endif
+
+    // Eve calculates AES Key. nb use wrong key EKeyG1
+    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,&X,&PIA,&PIB,&PbG2,&PgG1,&EKeyG1,&IdB,&K1);
+    if (rtn != 0)
+    {
+        printf("Eve WCC_ZZZ_SENDER_KEY() Error %d\n", rtn);
+        return 1;
+    }
+#ifdef DEBUG
+    printf("Eve AES Key: ");
+    OCT_output(&K1);
+#endif
+    if (OCT_comp(&K1,&ZERO))
+    {
+        printf("Eve WCC_ZZZ_SENDER_KEY() Error: generated key is zero\n");
+        return 1;
+    }
+
+#ifdef DEBUG
+    printf("K1: 0x");
+    OCT_output(&K1);
+    printf("K2: 0x");
+    OCT_output(&K2);
+#endif
+
+    if (OCT_comp(&K1,&K2))
+    {
+        printf("FAILURE Bad key run keys match. OCT_comp(&K1,&K2)\n");
+        return 1;
     }
 
     KILL_CSPRNG(&RNG);
-    printf("SUCCESS! WCC BAD SENDER KEY TEST\n");
+    printf("SUCCESS! WCC BAD RECEIVER KEY TEST\n");
     return 0;
 }
