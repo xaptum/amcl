@@ -50,18 +50,8 @@ int main()
     char bkeyG2[4*WCC_PFS_ZZZ];
     octet BKeyG2= {0,sizeof(bkeyG2), bkeyG2};
 
-    // Sender time permits
-    char aTPG1[2*WCC_PFS_ZZZ+1];
-    octet ATPG1= {0,sizeof(aTPG1), aTPG1};
-
-    // Receiver time permits;
-    char bTPG2[4*WCC_PFS_ZZZ];
-    octet BTPG2= {0,sizeof(bTPG2), bTPG2};
-
-    // Idenitities
-    char hv[WCC_PFS_ZZZ],alice_id[256],bob_id[256];
-    octet HV= {0,sizeof(hv),hv};
-
+    // Identities
+    char alice_id[256],bob_id[256];
     octet IdA= {0,sizeof(alice_id),alice_id};
     octet IdB= {0,sizeof(bob_id),bob_id};
 
@@ -101,18 +91,13 @@ int main()
     octet SEED = {0,sizeof(seed),seed};
     csprng RNG;
 
-    int i, rtn, date, hash;
+    int i, rtn;
 
-    int hashDoneOn = 1;
-
-    date = today();
-    hash = SHA256;
-
-    /* unrandom seed value! */
+    /* non random seed value */
     SEED.len=32;
     for (i=0; i<32; i++) SEED.val[i]=i+1;
 
-    /* initialise random number generator */
+    /* initialize random number generator */
     CREATE_CSPRNG(&RNG,&SEED);
 
     /* TEST RUN: execute a test run with valid points to make sure
@@ -122,44 +107,36 @@ int main()
     /* TA: Generate master secret  */
     WCC_ZZZ_RANDOM_GENERATE(&RNG,&MS);
 
-    // TA: Generate Alices's sender key
+    // TA: Generate Alice's sender key
     OCT_jstring(&IdA,"alice@miracl.com");
-    HASH_ID(hash,&IdA,&HV);
-    WCC_ZZZ_GET_G1_MULTIPLE(hash,hashDoneOn,&MS,&HV,&AKeyG1);
-
-    // TA: Generate Alice's G1 time permit
-    WCC_ZZZ_GET_G1_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS,&HV,&ATPG1);
+    WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdA,&AKeyG1);
 
     // TA: Generate Bob's receiver key
     OCT_jstring(&IdB,"bob@miracl.com");
-    HASH_ID(hash,&IdB,&HV);
-    WCC_ZZZ_GET_G2_MULTIPLE(hash,hashDoneOn,&MS,&HV,&BKeyG2);
-
-    // TA: Generate Bob's G2 time permit
-    WCC_ZZZ_GET_G2_PERMIT(HASH_TYPE_WCC_ZZZ,date,&MS,&HV,&BTPG2);
+    WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdB,&BKeyG2);
 
     // Generate ephemeral parameters
     WCC_ZZZ_RANDOM_GENERATE(&RNG,&X);
-    WCC_ZZZ_GET_G1_TPMULT(HASH_TYPE_WCC_ZZZ,date,&X,&IdA,&PaG1);
+    WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1);
 
     WCC_ZZZ_RANDOM_GENERATE(&RNG,&W);
-    WCC_ZZZ_GET_G1_TPMULT(HASH_TYPE_WCC_ZZZ,date,&W,&IdA,&PgG1);
+    WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1);
 
     WCC_ZZZ_RANDOM_GENERATE(&RNG,&Y);
-    WCC_ZZZ_GET_G2_TPMULT(HASH_TYPE_WCC_ZZZ,date,&Y,&IdB,&PbG2);
+    WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2);
 
-    WCC_ZZZ_Hq(hash,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
-    WCC_ZZZ_Hq(hash,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PaG1,&PbG2,&PgG1,&IdB,&PIA);
+    WCC_ZZZ_Hq(HASH_TYPE_WCC_ZZZ,&PbG2,&PaG1,&PgG1,&IdA,&PIB);
 
     /* Check that the functions work with valid points */
-    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,date, &X, &PIA, &PIB, &PbG2, &PgG1, &AKeyG1, &ATPG1, &IdB, &K1);
+    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,&X,&PIA,&PIB,&PbG2,&PgG1,&AKeyG1,&IdB,&K1);
     if (rtn != WCC_OK)
     {
         printf("FAILURE Check sender with valid points\n");
         return 1;
     }
 
-    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, &BTPG2, &IdA, &K2);
+    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,&Y,&W,&PIA,&PIB,&PaG1,&PgG1,&BKeyG2,&IdA,&K2);
     if (rtn != WCC_OK)
     {
         printf("FAILURE Check receiver with valid points\n");
@@ -184,7 +161,7 @@ int main()
     /* Check handling of invalid points */
 
     // Invalid Sender PbG2
-    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,date, &X, &PIA, &PIB, &InvalidG2, &PgG1, &AKeyG1, &ATPG1, &IdB, &K1);
+    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,&X,&PIA,&PIB,&InvalidG2,&PgG1,&AKeyG1,&IdB,&K1);
     if (rtn != WCC_INVALID_POINT)
     {
         printf("FAILURE Handle invalid PbG2: 51 != %d\n", rtn);
@@ -192,7 +169,7 @@ int main()
     }
 
     // Invalid Sender PgG1
-    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,date, &X, &PIA, &PIB, &PbG2, &InvalidG1, &AKeyG1, &ATPG1, &IdB, &K1);
+    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,&X,&PIA,&PIB,&PbG2,&InvalidG1,&AKeyG1,&IdB,&K1);
     if (rtn != WCC_INVALID_POINT)
     {
         printf("FAILURE Handle invalid PgG1: 51 != %d\n", rtn);
@@ -200,23 +177,15 @@ int main()
     }
 
     // Invalid Sender AKeyG1
-    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,date, &X, &PIA, &PIB, &PbG2, &PgG1, &InvalidG1, &ATPG1, &IdB, &K1);
+    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,&X,&PIA,&PIB,&PbG2,&PgG1,&InvalidG1,&IdB,&K1);
     if (rtn != WCC_INVALID_POINT)
     {
         printf("FAILURE Handle invalid AKeyG1: 51 != %d\n", rtn);
         return 1;
     }
 
-    // Invalid Sender ATPG1
-    rtn = WCC_ZZZ_SENDER_KEY(HASH_TYPE_WCC_ZZZ,date, &X, &PIA, &PIB, &PbG2, &PgG1, &AKeyG1, &InvalidG1, &IdB, &K1);
-    if (rtn != WCC_INVALID_POINT)
-    {
-        printf("FAILURE Handle invalid ATPG1: 51 != %d\n", rtn);
-        return 1;
-    }
-
     // Invalid Receiver PaG1
-    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &InvalidG1, &PgG1, &BKeyG2, &BTPG2, &IdA, &K2);
+    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,&Y,&W,&PIA,&PIB,&InvalidG1,&PgG1,&BKeyG2,&IdA,&K2);
     if (rtn != WCC_INVALID_POINT)
     {
         printf("FAILURE Handle invalid PaG1: 51 != %d\n", rtn);
@@ -224,7 +193,7 @@ int main()
     }
 
     // Invalid Receiver PgG1
-    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &PaG1, &InvalidG1, &BKeyG2, &BTPG2, &IdA, &K2);
+    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,&Y,&W,&PIA,&PIB,&PaG1,&InvalidG1,&BKeyG2,&IdA,&K2);
     if (rtn != WCC_INVALID_POINT)
     {
         printf("FAILURE Handle invalid PgG1: 51 != %d\n", rtn);
@@ -232,18 +201,10 @@ int main()
     }
 
     // Invalid Receiver BKeyG2
-    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &InvalidG2, &BTPG2, &IdA, &K2);
+    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,&Y,&W,&PIA,&PIB,&PaG1,&PgG1,&InvalidG2,&IdA,&K2);
     if (rtn != WCC_INVALID_POINT)
     {
         printf("FAILURE Handle invalid BKeyG2: 51 != %d\n", rtn);
-        return 1;
-    }
-
-    // Invalid Receiver BTPG2
-    rtn = WCC_ZZZ_RECEIVER_KEY(HASH_TYPE_WCC_ZZZ,date, &Y, &W,  &PIA, &PIB,  &PaG1, &PgG1, &BKeyG2, &InvalidG2, &IdA, &K2);
-    if (rtn != WCC_INVALID_POINT)
-    {
-        printf("FAILURE Handle invalid BTPG2: 51 != %d\n", rtn);
         return 1;
     }
 

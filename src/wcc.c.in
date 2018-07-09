@@ -73,22 +73,15 @@ void WCC_ZZZ_Hq(int sha, octet *A,octet *B,octet *C,octet *D,octet *h)
 }
 
 /*  Calculate a value in G1. VG1 = s*H1(ID) where ID is the identity */
-int WCC_ZZZ_GET_G1_MULTIPLE(int sha, int hashDone, octet *S,octet *ID,octet *VG1)
+int WCC_ZZZ_GET_G1_MULTIPLE(int sha, octet *S,octet *ID,octet *VG1)
 {
     BIG_XXX s;
     ECP_ZZZ P;
     char h[WCC_PFS_ZZZ];
     octet H= {0,sizeof(h),h};
 
-    if (hashDone)
-    {
-        ECP_ZZZ_mapit(&P,ID);
-    }
-    else
-    {
-        mhashit(sha,0,ID,&H);
-        ECP_ZZZ_mapit(&P,&H);
-    }
+    mhashit(sha,0,ID,&H);
+    ECP_ZZZ_mapit(&P,&H);
 
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G1mul(&P,s);
@@ -97,114 +90,32 @@ int WCC_ZZZ_GET_G1_MULTIPLE(int sha, int hashDone, octet *S,octet *ID,octet *VG1
     return 0;
 }
 
-/* Calculate a value in G1 used for when time permits are enabled */
-int WCC_ZZZ_GET_G1_TPMULT(int sha, int date, octet *S,octet *ID,octet *VG1)
-{
-    BIG_XXX s;
-    ECP_ZZZ P,Q;
-    char h1[WCC_PFS_ZZZ];
-    octet H1= {0,sizeof(h1),h1};
-    char h2[WCC_PFS_ZZZ];
-    octet H2= {0,sizeof(h2),h2};
-
-    // H1(ID)
-    mhashit(sha,0,ID,&H1);
-    ECP_ZZZ_mapit(&P,&H1);
-
-    // H1(date|sha256(ID))
-    mhashit(sha,date,&H1,&H2);
-    ECP_ZZZ_mapit(&Q,&H2);
-
-    // P = P + Q
-    ECP_ZZZ_add(&P,&Q);
-
-    // P = s(P+Q)
-    BIG_XXX_fromBytes(s,S->val);
-    PAIR_ZZZ_G1mul(&P,s);
-
-    ECP_ZZZ_toOctet(VG1,&P);
-    return 0;
-}
-
-/* Calculate a value in G2 used for when time permits are enabled */
-int WCC_ZZZ_GET_G2_TPMULT(int sha, int date, octet *S,octet *ID,octet *VG2)
-{
-    BIG_XXX s;
-    ECP2_ZZZ P,Q;
-    char h1[WCC_PFS_ZZZ];
-    octet H1= {0,sizeof(h1),h1};
-    char h2[WCC_PFS_ZZZ];
-    octet H2= {0,sizeof(h2),h2};
-
-    // H1(ID)
-    mhashit(sha,0,ID,&H1);
-    ECP2_ZZZ_mapit(&P,&H1);
-
-    // H1(date|sha256(ID))
-    mhashit(sha,date,&H1,&H2);
-    ECP2_ZZZ_mapit(&Q,&H2);
-
-    // P = P + Q
-    ECP2_ZZZ_add(&P,&Q);
-
-    // P = s(P+Q)
-    BIG_XXX_fromBytes(s,S->val);
-    PAIR_ZZZ_G2mul(&P,s);
-
-    ECP2_ZZZ_toOctet(VG2,&P);
-    return 0;
-}
 
 /* Calculate a value in G2. VG2 = s*H2(ID) where ID is the identity */
-int WCC_ZZZ_GET_G2_MULTIPLE(int sha, int hashDone, octet *S,octet *ID,octet *VG2)
+int WCC_ZZZ_GET_G2_MULTIPLE(int sha, octet *S,octet *ID,octet *VG2)
 {
     BIG_XXX s;
     ECP2_ZZZ P;
     char h[WCC_PFS_ZZZ];
     octet H= {0,sizeof(h),h};
 
-    if (hashDone)
-    {
-        ECP2_ZZZ_mapit(&P,ID);
-    }
-    else
-    {
-        mhashit(sha,0,ID,&H);
-        ECP2_ZZZ_mapit(&P,&H);
-    }
+    mhashit(sha,0,ID,&H);
+    ECP2_ZZZ_mapit(&P,&H);
 
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G2mul(&P,s);
 
     ECP2_ZZZ_toOctet(VG2,&P);
-    return 0;
-}
-
-/* Calculate time permit in G2 */
-int WCC_ZZZ_GET_G2_PERMIT(int sha, int date,octet *S,octet *HID,octet *TPG2)
-{
-    BIG_XXX s;
-    ECP2_ZZZ P;
-    char h[WCC_PFS_ZZZ];
-    octet H= {0,sizeof(h),h};
-
-    mhashit(sha,date,HID,&H);
-    ECP2_ZZZ_mapit(&P,&H);
-    BIG_XXX_fromBytes(s,S->val);
-    PAIR_ZZZ_G2mul(&P,s);
-
-    ECP2_ZZZ_toOctet(TPG2,&P);
     return 0;
 }
 
 /* Calculate the sender AES Key */
-int WCC_ZZZ_SENDER_KEY(int sha, int date, octet *xOct, octet *piaOct, octet *pibOct, octet *PbG2Oct, octet *PgG1Oct, octet *AKeyG1Oct, octet *ATPG1Oct, octet *IdBOct, octet *AESKeyOct)
+int WCC_ZZZ_SENDER_KEY(int sha, octet *xOct, octet *piaOct, octet *pibOct, octet *PbG2Oct, octet *PgG1Oct, octet *AKeyG1Oct, octet *IdBOct, octet *AESKeyOct)
 {
-    ECP_ZZZ sAG1,ATPG1,PgG1;
-    ECP2_ZZZ BG2,dateBG2,PbG2;
-    char hv1[WCC_PFS_ZZZ],hv2[WCC_PFS_ZZZ];
+    ECP_ZZZ sAG1,PgG1;
+    ECP2_ZZZ BG2,PbG2;
+    char hv1[WCC_PFS_ZZZ];
     octet HV1= {0,sizeof(hv1),hv1};
-    octet HV2= {0,sizeof(hv2),hv2};
 
     // Pairing outputs
     FP12_YYY g;
@@ -257,29 +168,6 @@ int WCC_ZZZ_SENDER_KEY(int sha, int date, octet *xOct, octet *piaOct, octet *pib
         return WCC_INVALID_POINT;
     }
 
-    // Use time permits
-    if (date)
-    {
-        // calculate e( (s*A+s*H(date|H(AID))) , (B+H(date|H(BID))) )
-        if (!ECP_ZZZ_fromOctet(&ATPG1,ATPG1Oct))
-        {
-#ifdef DEBUG
-            printf("ATPG1Oct Invalid Point: ");
-            OCT_output(ATPG1Oct);
-            printf("\n");
-#endif
-            return WCC_INVALID_POINT;
-        }
-
-        // H2(date|sha256(IdB))
-        mhashit(sha,date,&HV1,&HV2);
-        ECP2_ZZZ_mapit(&dateBG2,&HV2);
-
-        // sAG1 = sAG1 + ATPG1
-        ECP_ZZZ_add(&sAG1, &ATPG1);
-        // BG2 = BG2 + H(date|H(IdB))
-        ECP2_ZZZ_add(&BG2, &dateBG2);
-    }
     // z =  x + pia
     BIG_XXX_add(z,x,pia);
 
@@ -331,13 +219,12 @@ int WCC_ZZZ_SENDER_KEY(int sha, int date, octet *xOct, octet *piaOct, octet *pib
 }
 
 /* Calculate the receiver AES key */
-int WCC_ZZZ_RECEIVER_KEY(int sha, int date, octet *yOct, octet *wOct,  octet *piaOct, octet *pibOct,  octet *PaG1Oct, octet *PgG1Oct, octet *BKeyG2Oct,octet *BTPG2Oct,  octet *IdAOct, octet *AESKeyOct)
+int WCC_ZZZ_RECEIVER_KEY(int sha, octet *yOct, octet *wOct,  octet *piaOct, octet *pibOct,  octet *PaG1Oct, octet *PgG1Oct, octet *BKeyG2Oct, octet *IdAOct, octet *AESKeyOct)
 {
-    ECP_ZZZ AG1,dateAG1,PgG1,PaG1;
-    ECP2_ZZZ sBG2,BTPG2;
-    char hv1[WCC_PFS_ZZZ],hv2[WCC_PFS_ZZZ];
+    ECP_ZZZ AG1,PgG1,PaG1;
+    ECP2_ZZZ sBG2;
+    char hv1[WCC_PFS_ZZZ];
     octet HV1= {0,sizeof(hv1),hv1};
-    octet HV2= {0,sizeof(hv2),hv2};
 
     // Pairing outputs
     FP12_YYY g;
@@ -370,21 +257,6 @@ int WCC_ZZZ_RECEIVER_KEY(int sha, int date, octet *yOct, octet *wOct,  octet *pi
     if (!ECP2_ZZZ_fromOctet(&sBG2,BKeyG2Oct))
         return WCC_INVALID_POINT;
 
-    if (date)
-    {
-        // Calculate e( (A+H(date|H(AID))) , (s*B+s*H(date|H(IdB))) )
-        if (!ECP2_ZZZ_fromOctet(&BTPG2,BTPG2Oct))
-            return WCC_INVALID_POINT;
-
-        // H1(date|sha256(AID))
-        mhashit(sha,date,&HV1,&HV2);
-        ECP_ZZZ_mapit(&dateAG1,&HV2);
-
-        // sBG2 = sBG2 + TPG2
-        ECP2_ZZZ_add(&sBG2, &BTPG2);
-        // AG1 = AG1 + H(date|H(AID))
-        ECP_ZZZ_add(&AG1, &dateAG1);
-    }
     // y =  y + pib
     BIG_XXX_add(y,y,pib);
 
@@ -436,7 +308,7 @@ int WCC_ZZZ_RECEIVER_KEY(int sha, int date, octet *yOct, octet *wOct,  octet *pi
 
 }
 
-/* Generate a random number Modulus_ZZZ the group order */
+/* Generate a random number modulus the group order */
 int WCC_ZZZ_RANDOM_GENERATE(csprng *RNG,octet* S)
 {
     BIG_XXX r,s;
@@ -444,23 +316,6 @@ int WCC_ZZZ_RANDOM_GENERATE(csprng *RNG,octet* S)
     BIG_XXX_randomnum(s,r,RNG);
     BIG_XXX_toBytes(S->val,s);
     S->len=WCC_PGS_ZZZ;
-    return 0;
-}
-
-/* Calculate time permit in G2 */
-int WCC_ZZZ_GET_G1_PERMIT(int sha, int date,octet *S,octet *HID,octet *TPG1)
-{
-    BIG_XXX s;
-    ECP_ZZZ P;
-    char h[WCC_PFS_ZZZ];
-    octet H= {0,sizeof(h),h};
-
-    mhashit(sha,date,HID,&H);
-    ECP_ZZZ_mapit(&P,&H);
-    BIG_XXX_fromBytes(s,S->val);
-    PAIR_ZZZ_G1mul(&P,s);
-
-    ECP_ZZZ_toOctet(TPG1,&P);
     return 0;
 }
 

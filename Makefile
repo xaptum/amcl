@@ -247,10 +247,14 @@ endif
 # Format the source code
 format:
 	astyle --style=allman --recursive --suffix=none 'include/*.h'
+	astyle --style=allman --recursive --suffix=none 'include/*.h.in'
 	astyle --style=allman --recursive --suffix=none 'src/*.c'
+	astyle --style=allman --recursive --suffix=none 'src/*.c.in'
 	astyle --style=allman --recursive --suffix=none 'test/*.c'
+	astyle --style=allman --recursive --suffix=none 'test/*.c.in'
 	astyle --style=allman --recursive --suffix=none 'examples/*.c'
-	astyle --style=allman --recursive --suffix=none 'benchmark/*.c'
+	astyle --style=allman --recursive --suffix=none 'examples/*.c.in'
+	astyle --style=allman --recursive --suffix=none 'benchmark/*.c.in'
 	autopep8 --in-place --aggressive --aggressive ./wrappers/python/*.py
 
 # Remove any build artifact
