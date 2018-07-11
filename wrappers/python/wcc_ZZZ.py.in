@@ -72,8 +72,9 @@ extern void KILL_CSPRNG(csprng *R);
 
 extern int WCC_ZZZ_RANDOM_GENERATE(csprng *RNG,octet* S);
 extern void WCC_ZZZ_Hq(int sha, octet *A,octet *B,octet *C,octet *D,octet *h);
-extern int WCC_ZZZ_GET_G2_MULTIPLE(int sha, octet *S,octet *ID,octet *VG2);
-extern int WCC_ZZZ_GET_G1_MULTIPLE(int sha, octet *S,octet *ID,octet *VG1);
+extern void HASH_ID(int sha, octet *,octet *);
+extern int WCC_ZZZ_GET_G2_MULTIPLE(octet *S,octet *HID,octet *VG2);
+extern int WCC_ZZZ_GET_G1_MULTIPLE(octet *S,octet *HID,octet *VG1);
 extern int WCC_ZZZ_SENDER_KEY(int sha, octet *xOct, octet *piaOct, octet *pibOct, octet *PbG2Oct, octet *PgG1Oct, octet *AKeyG1Oct, octet *IdBOct, octet *AESKeyOct);
 extern int WCC_ZZZ_RECEIVER_KEY(int sha, octet *yOct, octet *wOct,  octet *piaOct, octet *pibOct, octet *PaG1Oct, octet *PgG1Oct, octet *BKeyG2Oct, octet *IdAOct, octet *AESKeyOct);
 extern void AES_GCM_ENCRYPT(octet *K,octet *IV,octet *H,octet *P,octet *C,octet *T);
@@ -149,11 +150,11 @@ if __name__ == "__main__":
     IdA[0].len = len(alice_id)
 
     # Hash value of IdA
-    AHV = ffi.new("octet*")
-    AHVval = ffi.new("char []", HASH_BYTES)
-    AHV[0].val = AHVval
-    AHV[0].max = HASH_BYTES
-    AHV[0].len = HASH_BYTES
+    HIdA = ffi.new("octet*")
+    HIdAval = ffi.new("char []", HASH_BYTES)
+    HIdA[0].val = HIdAval
+    HIdA[0].max = HASH_BYTES
+    HIdA[0].len = HASH_BYTES
 
     # Bob Identity
     bob_id = raw_input("Please enter Bob's identity:")
@@ -164,11 +165,11 @@ if __name__ == "__main__":
     IdB[0].len = len(bob_id)
 
     # Hash value of IdB
-    BHV = ffi.new("octet*")
-    BHVval = ffi.new("char []", HASH_BYTES)
-    BHV[0].val = BHVval
-    BHV[0].max = HASH_BYTES
-    BHV[0].len = HASH_BYTES
+    HIdB = ffi.new("octet*")
+    HIdBval = ffi.new("char []", HASH_BYTES)
+    HIdB[0].val = HIdBval
+    HIdB[0].max = HASH_BYTES
+    HIdB[0].len = HASH_BYTES
 
     # Sender keys
     A1KeyG1 = ffi.new("octet*")
@@ -270,23 +271,30 @@ if __name__ == "__main__":
     PbG2[0].len = G2
 
     # Assign a seed value
-    RAW = ffi.new("octet*")
-    RAWval = ffi.new("char [%s]" % len(seed), seed)
-    RAW[0].val = RAWval
-    RAW[0].len = len(seed)
-    RAW[0].max = len(seed)
+    SEED = ffi.new("octet*")
+    SEEDval = ffi.new("char [%s]" % len(seed), seed)
+    SEED[0].val = SEEDval
+    SEED[0].len = len(seed)
+    SEED[0].max = len(seed)
     if DEBUG:
-        print "RAW: %s" % toHex(RAW)
+        print "SEED: %s" % toHex(SEED)
 
     # random number generator
     RNG = ffi.new("csprng*")
-    libamcl_core.CREATE_CSPRNG(RNG, RAW)
+    libamcl_core.CREATE_CSPRNG(RNG, SEED)
 
-    # Identities
+    # Hash IdA
+    libamcl_core.HASH_ID(HASH_TYPE_WCC_ZZZ, IdA, HIdA)
     if DEBUG:
         print "IdA: %s" % toHex(IdA)
-        print "IdB: %s" % toHex(IdB)
+        print "HIdA: %s" % toHex(HIdA)
 
+    # Hash IdB
+    libamcl_core.HASH_ID(HASH_TYPE_WCC_ZZZ, IdB, HIdB)
+    if DEBUG:
+        print "IdB: %s" % toHex(IdB)
+        print "HIdB: %s" % toHex(HIdB)
+        
     # Generate master secret for MIRACL and Customer
     rtn = libamcl_wcc_ZZZ.WCC_ZZZ_RANDOM_GENERATE(RNG, MS1)
     if rtn != 0:
@@ -299,12 +307,12 @@ if __name__ == "__main__":
         print "MS2: %s" % toHex(MS2)
 
     # Generate Alice's sender key shares
-    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ, MS1, IdA, A1KeyG1)
+    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS1, HIdA, A1KeyG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,MS1,IdA,A1KeyG1) Error %s" % rtn
-    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ, MS2, IdA, A2KeyG1)
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS1,HIdA,A1KeyG1) Error %s" % rtn
+    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS2, HIdA, A2KeyG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,MS2,IdA,A2KeyG1) Error %s" % rtn
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(MS2,HIdA,A2KeyG1) Error %s" % rtn
     if DEBUG:
         print "A1KeyG1: %s" % toHex(A1KeyG1)
         print "A2KeyG1: %s" % toHex(A2KeyG1)
@@ -316,12 +324,12 @@ if __name__ == "__main__":
     print "AKeyG1: %s" % toHex(AKeyG1)
 
     # Generate Bob's receiver secret key shares
-    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ, MS1, IdB, B1KeyG2)
+    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS1, HIdB, B1KeyG2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,MS1,IdB,B1KeyG2) Error %s" % rtn
-    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ, MS2, IdB, B2KeyG2)
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS1,HIdB,B1KeyG2) Error %s" % rtn
+    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS2, HIdB, B2KeyG2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,MS2,IdB,B2KeyG2) Error %s" % rtn
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(MS2,HIdB,B2KeyG2) Error %s" % rtn
     if DEBUG:
         print "B1KeyG2: %s" % toHex(B1KeyG2)
         print "B2KeyG2: %s" % toHex(B2KeyG2)
@@ -338,9 +346,9 @@ if __name__ == "__main__":
     if DEBUG:
         print "X: %s" % toHex(X)
 
-    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ, X, IdA, PaG1)
+    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(X, HIdA, PaG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,X,IdA,PaG1) Error %s", rtn
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(X,HIdA,PaG1) Error %s", rtn
     if DEBUG:
         print "PaG1: %s" % toHex(PaG1)
 
@@ -350,9 +358,9 @@ if __name__ == "__main__":
     if DEBUG:
         print "W: %s" % toHex(W)
 
-    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ, W, IdA, PgG1)
+    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(W, HIdA, PgG1)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ, W, IdA, PgG1) Error %s", rtn
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G1_MULTIPLE(W, HIdA, PgG1) Error %s", rtn
     if DEBUG:
         print "PgG1: %s" % toHex(PgG1)
 
@@ -362,9 +370,9 @@ if __name__ == "__main__":
     if DEBUG:
         print "Y: %s" % toHex(Y)
 
-    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ, Y, IdB, PbG2)
+    rtn = libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(Y, HIdB, PbG2)
     if rtn != 0:
-        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ, Y, IdB, PbG2) Error %s", rtn
+        print "libamcl_wcc_ZZZ.WCC_ZZZ_GET_G2_MULTIPLE(Y, HIdB, PbG2) Error %s", rtn
     if DEBUG:
         print "PbG2: %s" % toHex(PbG2)
 

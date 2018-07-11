@@ -73,15 +73,12 @@ void WCC_ZZZ_Hq(int sha, octet *A,octet *B,octet *C,octet *D,octet *h)
 }
 
 /*  Calculate a value in G1. VG1 = s*H1(ID) where ID is the identity */
-int WCC_ZZZ_GET_G1_MULTIPLE(int sha, octet *S,octet *ID,octet *VG1)
+int WCC_ZZZ_GET_G1_MULTIPLE(octet *S,octet *HID,octet *VG1)
 {
     BIG_XXX s;
     ECP_ZZZ P;
-    char h[WCC_PFS_ZZZ];
-    octet H= {0,sizeof(h),h};
 
-    mhashit(sha,0,ID,&H);
-    ECP_ZZZ_mapit(&P,&H);
+    ECP_ZZZ_mapit(&P,HID);
 
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G1mul(&P,s);
@@ -92,15 +89,12 @@ int WCC_ZZZ_GET_G1_MULTIPLE(int sha, octet *S,octet *ID,octet *VG1)
 
 
 /* Calculate a value in G2. VG2 = s*H2(ID) where ID is the identity */
-int WCC_ZZZ_GET_G2_MULTIPLE(int sha, octet *S,octet *ID,octet *VG2)
+int WCC_ZZZ_GET_G2_MULTIPLE(octet *S,octet *HID,octet *VG2)
 {
     BIG_XXX s;
     ECP2_ZZZ P;
-    char h[WCC_PFS_ZZZ];
-    octet H= {0,sizeof(h),h};
 
-    mhashit(sha,0,ID,&H);
-    ECP2_ZZZ_mapit(&P,&H);
+    ECP2_ZZZ_mapit(&P,HID);
 
     BIG_XXX_fromBytes(s,S->val);
     PAIR_ZZZ_G2mul(&P,s);
