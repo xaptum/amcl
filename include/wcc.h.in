@@ -84,13 +84,12 @@ void WCC_ZZZ_Hq(int sha,octet *A,octet *B,octet *C,octet *D,octet *h);
  * <li> VG2 = s*H2(ID)
  * </ol>
  *
- * @param  sha       Hash type
  * @param  S         integer modulus curve order
- * @param  ID        ID Value or sha256(ID)
+ * @param  HID       Hash of ID padded with zeros to the field size
  * @param  VG2       EC Point VG2 = s*H2(ID)
  * @return rtn       Returns 0 if successful or else an error code
  */
-int WCC_ZZZ_GET_G2_MULTIPLE(int sha,octet *S,octet *ID,octet *VG2);
+int WCC_ZZZ_GET_G2_MULTIPLE(octet *S,octet *HID,octet *VG2);
 
 /**
  * @brief Calculate value in G1 multiplied by an integer
@@ -101,13 +100,12 @@ int WCC_ZZZ_GET_G2_MULTIPLE(int sha,octet *S,octet *ID,octet *VG2);
  * <li> VG1 = s*H1(ID)
  * </ol>
  *
- * @param  sha         Hash type
  * @param  S           integer modulus curve order
- * @param  ID          ID value or sha256(ID)
+ * @param  HID         Hash of ID padded with zeros to the field size
  * @param  VG1         EC point VG1 = s*H1(ID)
  * @return rtn         Returns 0 if successful or else an error code
  */
-int WCC_ZZZ_GET_G1_MULTIPLE(int sha,octet *S,octet *ID,octet *VG1);
+int WCC_ZZZ_GET_G1_MULTIPLE(octet *S,octet *HID,octet *VG1);
 
 /**
  * @brief Calculate the sender AES key

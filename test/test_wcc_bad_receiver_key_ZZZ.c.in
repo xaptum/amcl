@@ -32,22 +32,7 @@
 #include "randapi.h"
 #include "wcc_ZZZ.h"
 
-// #define DEBUG
-
-void rand_str(octet* dest, csprng *RNG)
-{
-    BIG_XXX r;
-    char charset[] = "0123456789@.*"
-                     "abcdefghijklmnopqrstuvwxyz"
-                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    for(; dest->len < dest->max; dest->len++)
-    {
-        BIG_XXX_random(r,RNG);
-        size_t index = r[0] % (sizeof charset -1);
-        dest->val[dest->len] = charset[index];
-    }
-}
+#define DEBUG
 
 int main()
 {
@@ -69,11 +54,17 @@ int main()
     char ekeyG2[4*WCC_PFS_ZZZ];
     octet EKeyG2= {0,sizeof(ekeyG2), ekeyG2};
 
-    // Parties identities
+    // Identities
     char alice_id[256],bob_id[256],eve_id[256];
     octet IdA= {0,sizeof(alice_id),alice_id};
     octet IdB= {0,sizeof(bob_id),bob_id};
     octet IdE= {0,sizeof(eve_id),eve_id};
+
+    // Hash of the identities
+    char hida[WCC_PFS_ZZZ], hidb[WCC_PFS_ZZZ], hide[WCC_PFS_ZZZ];
+    octet HIdA = {0,sizeof(hida),hida};
+    octet HIdB = {0,sizeof(hidb),hidb};
+    octet HIdE = {0,sizeof(hide),hide};        
 
     // Ephemeral and intermediate values
     char x[WCC_PGS_ZZZ];
@@ -101,7 +92,6 @@ int main()
     char k2[WCC_PAS];
     octet K1= {0,sizeof(k1),k1};
     octet K2= {0,sizeof(k2),k2};
-
 
     // Zero octet
     char zero[WCC_PAS];
@@ -141,18 +131,21 @@ int main()
     /* Generate key material for Alice, Bob and Eve */
 
     // Alice's ID
-    rand_str(&IdA,&RNG);
+    OCT_jstring(&IdA,"alice@miracl.com");
 #ifdef DEBUG
     printf("ALICE ID:");
     OCT_output_string(&IdA);
     printf("\n");
 #endif
 
+    // Hash Alice's Id
+    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdA,&HIdA);
+
     // TA: Generate Alice's sender key
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdA,&AKeyG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(&MS,&HIdA,&AKeyG1);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdA,&AKeyG1) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_GET_G1_MULTIPLE(&MS,&HIdA,&AKeyG1) Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -161,19 +154,21 @@ int main()
 #endif
 
     // Bob's ID
-    rand_str(&IdB,&RNG);
+    OCT_jstring(&IdB,"bob@miracl.com");
 #ifdef DEBUG
     printf("BOB ID:");
     OCT_output_string(&IdB);
     printf("\n");
 #endif
 
+    // Hash Bob's Id
+    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdB,&HIdB);
+
     // TA: Generate Bob's receiver key
-    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdB,&IdB);
-    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdB,&BKeyG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(&MS,&HIdB,&BKeyG2);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdB,&BKeyG2) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_GET_G2_MULTIPLE(&MS,&HIdB,&BKeyG2) Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -182,19 +177,21 @@ int main()
 #endif
 
     // Eve's ID
-    rand_str(&IdE,&RNG);
+    OCT_jstring(&IdE,"eve@miracl.com");
 #ifdef DEBUG
     printf("EVE ID:");
     OCT_output_string(&IdE);
     printf("\n");
 #endif
 
+    // Hash Eve's Id
+    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdE,&HIdE);
+
     // TA: Generate Eve's receiver key
-    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdE,&IdE);
-    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdE,&EKeyG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(&MS,&HIdE,&EKeyG2);
     if (rtn != 0)
     {
-        printf("TA WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdE,&EKeyG2) Error %d\n", rtn);
+        printf("TA WCC_ZZZ_GET_G2_MULTIPLE(&MS,&HIdE,&EKeyG2) Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -221,10 +218,10 @@ int main()
     printf("\n");
 #endif
 
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(&X,&HIdA,&PaG1);
     if (rtn != 0)
     {
-        printf("Alice WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1) Error %d\n", rtn);
+        printf("Alice WCC_ZZZ_GET_G1_MULTIPLE(&X,&HIdA,&PaG1) Error %d\n", rtn);
         return 1;
     }
 
@@ -253,10 +250,10 @@ int main()
     OCT_output(&W);
     printf("\n");
 #endif
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(&W,&HIdA,&PgG1);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_GET_G1_MULTIPLE Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_GET_G1_MULTIPLE(&W,&HIdA,&PgG1) Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -276,16 +273,25 @@ int main()
     OCT_output(&Y);
     printf("\n");
 #endif
-    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(&Y,&HIdB,&PbG2);
     if (rtn != 0)
     {
-        printf("Bob WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2) Error %d\n", rtn);
+        printf("Bob WCC_ZZZ_GET_G2_MULTIPLE(&Y,&HIdB,&PbG2) Error %d\n", rtn);
         return 1;
     }
 
 #ifdef DEBUG
+    printf("Bob PaG1: ");
+    OCT_output(&PaG1);
+    printf("\n");
     printf("Bob PbG2: ");
     OCT_output(&PbG2);
+    printf("\n");
+    printf("Bob PgG1: ");
+    OCT_output(&PgG1);
+    printf("\n");
+    printf("Bob IdB: ");
+    OCT_output(&IdB);
     printf("\n");
 #endif
 
@@ -401,10 +407,10 @@ int main()
     printf("\n");
 #endif
 
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(&X,&HIdA,&PaG1);
     if (rtn != 0)
     {
-        printf("Alice WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1) Error %d\n", rtn);
+        printf("Alice WCC_ZZZ_GET_G1_MULTIPLE(&X,&HIdA,&PaG1) Error %d\n", rtn);
         return 1;
     }
 
@@ -433,10 +439,10 @@ int main()
     OCT_output(&W);
     printf("\n");
 #endif
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(&W,&HIdA,&PgG1);
     if (rtn != 0)
     {
-        printf("Eve WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1) Error %d\n", rtn);
+        printf("Eve WCC_ZZZ_GET_G1_MULTIPLE(&W,&HIdA,&PgG1) Error %d\n", rtn);
         return 1;
     }
 #ifdef DEBUG
@@ -456,10 +462,10 @@ int main()
     OCT_output(&Y);
     printf("\n");
 #endif
-    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdE,&PbG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(&Y,&HIdE,&PbG2);
     if (rtn != 0)
     {
-        printf("Eve WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdE,&PbG2) Error %d\n", rtn);
+        printf("Eve WCC_ZZZ_GET_G2_MULTIPLE(&Y,&HIdE,&PbG2) Error %d\n", rtn);
         return 1;
     }
 

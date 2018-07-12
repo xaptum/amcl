@@ -48,29 +48,35 @@ int main()
     char bkeyG2[4*WCC_PFS_ZZZ];
     octet BKeyG2= {0,sizeof(bkeyG2), bkeyG2};
 
+    // Identities
     char alice_id[256],bob_id[256];
     octet IdA= {0,sizeof(alice_id),alice_id};
     octet IdB= {0,sizeof(bob_id),bob_id};
 
+    // Hash of the identities
+    char hida[WCC_PFS_ZZZ], hidb[WCC_PFS_ZZZ];
+    octet HIdA = {0,sizeof(hida),hida};
+    octet HIdB = {0,sizeof(hidb),hidb};    
+    
     char x[WCC_PGS_ZZZ];
-    octet X= {0,sizeof(x),x};
+    octet X = {0,sizeof(x),x};
     char y[WCC_PGS_ZZZ];
-    octet Y= {0,sizeof(y),y};
+    octet Y = {0,sizeof(y),y};
     char w[WCC_PGS_ZZZ];
-    octet W= {0,sizeof(w),w};
+    octet W = {0,sizeof(w),w};
     char pia[WCC_PGS_ZZZ];
-    octet PIA= {0,sizeof(pia),pia};
+    octet PIA = {0,sizeof(pia),pia};
     char pib[WCC_PGS_ZZZ];
-    octet PIB= {0,sizeof(pib),pib};
+    octet PIB = {0,sizeof(pib),pib};
 
     char pgg1[2*WCC_PFS_ZZZ+1];
-    octet PgG1= {0,sizeof(pgg1), pgg1};
+    octet PgG1 = {0,sizeof(pgg1), pgg1};
 
     char pag1[2*WCC_PFS_ZZZ+1];
-    octet PaG1= {0,sizeof(pag1), pag1};
+    octet PaG1 = {0,sizeof(pag1), pag1};
 
     char pbg2[4*WCC_PFS_ZZZ];
-    octet PbG2= {0,sizeof(pbg2), pbg2};
+    octet PbG2 = {0,sizeof(pbg2), pbg2};
 
     char seed[32] = {0};
     octet SEED = {0,sizeof(seed),seed};
@@ -123,8 +129,11 @@ int main()
     // Alice's ID
     OCT_jstring(&IdA,"alice@miracl.com");
 
+    // Hash Alice's Id
+    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdA,&HIdA);
+    
     // TA: Generate Alices's sender key
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdA,&AKeyG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(&MS,&HIdA,&AKeyG1);
     if (rtn != 0)
     {
         printf("TA WCC_ZZZ_GET_G1_MULTIPLE() Error %d\n", rtn);
@@ -138,8 +147,11 @@ int main()
     // Bob's ID
     OCT_jstring(&IdB,"bob@miracl.com");
 
+    // Hash Bob's Id
+    HASH_ID(HASH_TYPE_WCC_ZZZ,&IdB,&HIdB);
+    
     // TA: Generate Bob's receiver key
-    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&MS,&IdB,&BKeyG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(&MS,&HIdB,&BKeyG2);
     if (rtn != 0)
     {
         printf("TA WCC_ZZZ_GET_G2_MULTIPLE() Error %d\n", rtn);
@@ -165,7 +177,7 @@ int main()
     printf("\n");
 #endif
 
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&X,&IdA,&PaG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(&X,&HIdA,&PaG1);
     if (rtn != 0)
     {
         printf("Alice WCC_ZZZ_GET_G1_MULTIPLE() Error %d\n", rtn);
@@ -193,7 +205,7 @@ int main()
     OCT_output(&W);
     printf("\n");
 #endif
-    rtn = WCC_ZZZ_GET_G1_MULTIPLE(HASH_TYPE_WCC_ZZZ,&W,&IdA,&PgG1);
+    rtn = WCC_ZZZ_GET_G1_MULTIPLE(&W,&HIdA,&PgG1);
     if (rtn != 0)
     {
         printf("Bob WCC_ZZZ_GET_G1_MULTIPLE() Error %d\n", rtn);
@@ -216,7 +228,7 @@ int main()
     OCT_output(&Y);
     printf("\n");
 #endif
-    rtn = WCC_ZZZ_GET_G2_MULTIPLE(HASH_TYPE_WCC_ZZZ,&Y,&IdB,&PbG2);
+    rtn = WCC_ZZZ_GET_G2_MULTIPLE(&Y,&HIdB,&PbG2);
     if (rtn != 0)
     {
         printf("Bob WCC_ZZZ_GET_G1_MULTIPLE() Error %d\n", rtn);
@@ -340,6 +352,8 @@ int main()
     OCT_clear(&BKeyG2);
     OCT_clear(&IdA);
     OCT_clear(&IdB);
+    OCT_clear(&HIdA);
+    OCT_clear(&HIdB);    
     OCT_clear(&X);
     OCT_clear(&Y);
     OCT_clear(&W);
