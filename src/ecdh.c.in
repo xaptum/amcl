@@ -60,7 +60,6 @@ int ECP_ZZZ_KEY_PAIR_GENERATE(csprng *RNG,octet* S,octet *W)
 
 #ifdef AES_S
     BIG_XXX_mod2m(s,2*AES_S);
-//	BIG_toBytes(S->val,s);
 #endif
 
     ECP_ZZZ_mul(&G,s);
@@ -279,8 +278,6 @@ int ECP_ZZZ_VP_DSA(int sha,octet *W,octet *F, octet *C,octet *D)
     if (hlen>MODBYTES_XXX) hlen=MODBYTES_XXX;
 
     BIG_XXX_fromBytesLen(f,H.val,hlen);
-
-    //BIG_fromBytes(f,H.val);
 
     if (BIG_XXX_iszilch(c) || BIG_XXX_comp(c,r)>=0 || BIG_XXX_iszilch(d) || BIG_XXX_comp(d,r)>=0)
         res=ECDH_INVALID;

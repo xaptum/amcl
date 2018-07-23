@@ -87,7 +87,6 @@ int WCC_ZZZ_GET_G1_MULTIPLE(octet *S,octet *HID,octet *VG1)
     return 0;
 }
 
-
 /* Calculate a value in G2. VG2 = s*H2(ID) where ID is the identity */
 int WCC_ZZZ_GET_G2_MULTIPLE(octet *S,octet *HID,octet *VG2)
 {

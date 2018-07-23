@@ -290,8 +290,6 @@ int MPIN_ZZZ_GET_CLIENT_PERMIT(int h,int d,octet *S,octet *ID,octet *TP);
 	@return 0 or an error code
  */
 int MPIN_ZZZ_GET_SERVER_SECRET(octet *S,octet *SS);
-/* int MPIN_TEST_PAIRING(octet *,octet *); */
-
 /* For M-Pin Full */
 /**	@brief Precompute values for use by the client side of M-Pin Full
  *
