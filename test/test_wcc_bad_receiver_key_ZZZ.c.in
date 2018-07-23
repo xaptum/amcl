@@ -64,7 +64,7 @@ int main()
     char hida[WCC_PFS_ZZZ], hidb[WCC_PFS_ZZZ], hide[WCC_PFS_ZZZ];
     octet HIdA = {0,sizeof(hida),hida};
     octet HIdB = {0,sizeof(hidb),hidb};
-    octet HIdE = {0,sizeof(hide),hide};        
+    octet HIdE = {0,sizeof(hide),hide};
 
     // Ephemeral and intermediate values
     char x[WCC_PGS_ZZZ];

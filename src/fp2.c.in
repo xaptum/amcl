@@ -134,7 +134,6 @@ void FP2_YYY_neg(FP2_YYY *w,FP2_YYY *x)
 {
     /* Just one neg! */
     FP_YYY m,t;
-//    FP2_YYY_norm(x);
     FP_YYY_add(&m,&(x->a),&(x->b));
     FP_YYY_neg(&m,&m);
     FP_YYY_add(&t,&m,&(x->b));
@@ -148,7 +147,6 @@ void FP2_YYY_neg(FP2_YYY *w,FP2_YYY *x)
 void FP2_YYY_conj(FP2_YYY *w,FP2_YYY *x)
 {
     FP_YYY_copy(&(w->a),&(x->a));
-//	BIG_XXX_norm(x->b);
     FP_YYY_neg(&(w->b),&(x->b));
     FP_YYY_norm(&(w->b));
 }
@@ -219,7 +217,7 @@ void FP2_YYY_mul(FP2_YYY *w,FP2_YYY *x,FP2_YYY *y)
     BIG_XXX_rcopy(p,Modulus_YYY);
     BIG_XXX_dsucopy(pR,p);
 
-// reduce excesses of a and b as required (so product < pR)
+    // reduce excesses of a and b as required (so product < pR)
 
     if ((sign64)(x->a.XES+x->b.XES)*(y->a.XES+y->b.XES)>(sign64)FEXCESS_YYY)
     {
@@ -301,7 +299,6 @@ void FP2_YYY_inv(FP2_YYY *w,FP2_YYY *x)
     FP_YYY_neg(&w1,&w1);
     FP_YYY_norm(&w1);
     FP_YYY_mul(&(w->b),&(x->b),&w1);
-//	FP2_YYY_norm(w);
 }
 
 
@@ -322,7 +319,6 @@ void FP2_YYY_mul_ip(FP2_YYY *w)
     FP_YYY z;
     FP2_YYY t;
 
-//   FP2_YYY_norm(w);
     FP2_YYY_copy(&t,w);
 
     FP_YYY_copy(&z,&(w->a));
@@ -330,7 +326,7 @@ void FP2_YYY_mul_ip(FP2_YYY *w)
     FP_YYY_copy(&(w->b),&z);
 
     FP2_YYY_add(w,&t,w);
-//    Output NOT normed, so use with care
+    // Output NOT normed, so use with care
 }
 
 

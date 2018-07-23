@@ -52,7 +52,7 @@ int main()
     char bkeyG2[4*WCC_PFS_ZZZ];
     octet BKeyG2= {0,sizeof(bkeyG2), bkeyG2};
 
-    // Identities    
+    // Identities
     char alice_id[256],bob_id[256];
     octet IdA= {0,sizeof(alice_id),alice_id};
     octet IdB= {0,sizeof(bob_id),bob_id};
@@ -60,7 +60,7 @@ int main()
     // Hash of the identities
     char hida[WCC_PFS_ZZZ], hidb[WCC_PFS_ZZZ];
     octet HIdA = {0,sizeof(hida),hida};
-    octet HIdB = {0,sizeof(hidb),hidb};     
+    octet HIdB = {0,sizeof(hidb),hidb};
 
     char x[WCC_PGS_ZZZ];
     octet X= {0,sizeof(x),x};
